@@ -1,17 +1,20 @@
-<div x-data="runner()" x-init="acquireWake()" x-on:session-finished.window="releaseWake()" class="dyno-wrap">
-
-    @php
-        $total = $this->totalSets;
-        $doneCount = $this->completedSets;
-        $pct = $total > 0 ? $doneCount / $total : 0;
-        $circ = 2 * M_PI * 52;
-    @endphp
+@php
+    $total = $this->totalSets;
+    $doneCount = $this->completedSets;
+    $pct = $total > 0 ? $doneCount / $total : 0;
+    $circ = 2 * M_PI * 52;
+@endphp
+<div x-data="runner({ done: @js((object) $done), total: {{ $total }}, workoutId: {{ $workout->id }} })"
+     x-init="acquireWake(); flushQueue()"
+     x-on:session-finished.window="releaseWake()"
+     x-on:online.window="flushQueue()"
+     class="dyno-wrap">
 
     @if ($finished)
         {{-- ---------- Completed summary ---------- --}}
         <div class="card" style="text-align:center;">
             <div class="label" style="margin-bottom:12px;">Session complete</div>
-            <div class="metric" style="font-size:64px;">{{ $doneCount }}<span class="muted" style="font-size:28px;">/{{ $total }}</span></div>
+            <div class="metric" style="font-size:64px;">{{ $completedCount }}<span class="muted" style="font-size:28px;">/{{ $total }}</span></div>
             <div class="label" style="margin-top:8px;">sets logged</div>
             <div style="font-weight:700;font-size:20px;margin-top:18px;">{{ $workout->name }}</div>
             <a href="{{ route('history') }}" class="btn btn--primary btn--full" style="margin-top:22px;">Done</a>
@@ -31,7 +34,8 @@
                 <circle class="arc__fill" cx="60" cy="60" r="52" fill="none" stroke-width="10"
                         stroke="{{ $workout->focus_area->accentHex() }}"
                         stroke-dasharray="{{ $circ }}"
-                        stroke-dashoffset="{{ $circ * (1 - $pct) }}"/>
+                        stroke-dashoffset="{{ $circ * (1 - $pct) }}"
+                        x-bind:stroke-dashoffset="arcOffset({{ $circ }})"/>
             </svg>
             <div>
                 <div style="font-weight:800;font-size:22px;line-height:1.1;">{{ $workout->name }}</div>
@@ -39,7 +43,7 @@
                     <span class="accent-dot" style="background:{{ $workout->focus_area->accentHex() }};"></span>
                     {{ $workout->focus_area->label() }}
                 </div>
-                <div class="muted" style="margin-top:6px;font-weight:600;">{{ $doneCount }} / {{ $total }} sets</div>
+                <div class="muted" style="margin-top:6px;font-weight:600;"><span x-text="completedCount()">{{ $doneCount }}</span> / {{ $total }} sets</div>
             </div>
         </div>
 
@@ -72,13 +76,13 @@
 
                 <div style="margin-top:14px;">
                     @for ($s = 1; $s <= $item['sets']; $s++)
-                        @php $key = $item['we_id'].':'.$s; $isDone = $done[$key] ?? false; @endphp
-                        <div class="set-row {{ $isDone ? 'done' : '' }}">
-                            <button type="button" class="set-check" aria-pressed="{{ $isDone ? 'true' : 'false' }}"
-                                    aria-label="Set {{ $s }} {{ $isDone ? 'done' : 'not done' }}"
-                                    wire:click="toggleSet({{ $item['we_id'] }}, {{ $item['exercise_id'] ?? 'null' }}, {{ $s }})"
-                                    x-on:click="{{ (! $isDone && $item['rest_s']) ? 'startRest('.$item['rest_s'].')' : '' }}">
-                                <svg x-cloak width="18" height="18" viewBox="0 0 24 24" fill="none" style="{{ $isDone ? '' : 'display:none' }}">
+                        @php $key = $item['we_id'].':'.$s; @endphp
+                        <div class="set-row" x-bind:class="{ done: done['{{ $key }}'] }">
+                            <button type="button" class="set-check"
+                                    x-bind:aria-pressed="done['{{ $key }}'] ? 'true' : 'false'"
+                                    aria-label="Set {{ $s }}"
+                                    x-on:click="toggle({{ $item['we_id'] }}, {{ $item['exercise_id'] ?? 'null' }}, {{ $s }}, {{ $item['rest_s'] ?? 0 }})">
+                                <svg x-cloak x-show="done['{{ $key }}']" width="18" height="18" viewBox="0 0 24 24" fill="none">
                                     <path d="M5 13l4 4L19 7" stroke="#0A0A0B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
                             </button>

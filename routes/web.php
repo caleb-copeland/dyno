@@ -18,6 +18,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/schedule', ScheduleBuilder::class)->name('schedule');
     Route::get('/tests/{key}', BaselineTest::class)->name('tests.run');
     Route::get('/run/{workout}', WorkoutRunner::class)->name('run');
+    Route::post('/api/set-log', [\App\Http\Controllers\SetLogController::class, 'store'])->name('api.set-log');
 });
 
 Route::middleware('auth')->group(function () {

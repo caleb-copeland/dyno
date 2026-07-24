@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#0A0A0B">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Session' }} · Dyno</title>
+    @include('partials.pwa-head')
     @include('partials.dyno-styles')
     @livewireStyles
 </head>
@@ -17,7 +18,12 @@
          component compiler, and registered once via alpine:init. --}}
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('runner', () => ({
+            Alpine.data('runner', (config = {}) => ({
+                // ---- set state (single source of truth; server seeds it) ----
+                done: config.done || {},
+                total: config.total || 0,
+                workoutId: config.workoutId || null,
+
                 mode: 'idle',        // idle | rest | interval
                 remaining: 0,
                 label: '',
@@ -28,6 +34,56 @@
                 _tick: null,
                 _ctx: null,
                 _wake: null,
+
+                completedCount() {
+                    return Object.values(this.done).filter(Boolean).length;
+                },
+                arcOffset(circ) {
+                    const pct = this.total > 0 ? this.completedCount() / this.total : 0;
+                    return circ * (1 - pct);
+                },
+
+                // ---- set toggle → optimistic UI + persist (online) / queue (offline) ----
+                toggle(weId, exId, setNum, restS) {
+                    const key = weId + ':' + setNum;
+                    const next = !this.done[key];
+                    this.done[key] = next;
+                    if (next && restS) this.startRest(restS);
+                    this._persist({ workout_id: this.workoutId, workout_exercise_id: weId, set_number: setNum, completed: next });
+                },
+                _persist(item) {
+                    if (navigator.onLine) {
+                        this._send(item).catch(() => this._enqueue(item));
+                    } else {
+                        this._enqueue(item);
+                    }
+                },
+                _send(item) {
+                    return fetch('/api/set-log', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || '',
+                        },
+                        body: JSON.stringify(item),
+                    }).then((r) => { if (!r.ok) throw new Error('sync failed'); return r; });
+                },
+                _queueKey(i) { return i.workout_id + ':' + i.workout_exercise_id + ':' + i.set_number; },
+                _readQueue() { try { return JSON.parse(localStorage.getItem('dyno.setqueue') || '[]'); } catch (e) { return []; } },
+                _enqueue(item) {
+                    const map = {};
+                    this._readQueue().forEach((i) => { map[this._queueKey(i)] = i; });
+                    map[this._queueKey(item)] = item; // keep the latest state per set
+                    localStorage.setItem('dyno.setqueue', JSON.stringify(Object.values(map)));
+                },
+                flushQueue() {
+                    if (!navigator.onLine) return;
+                    const q = this._readQueue();
+                    if (!q.length) return;
+                    localStorage.removeItem('dyno.setqueue');
+                    q.reduce((p, item) => p.then(() => this._send(item).catch(() => this._enqueue(item))), Promise.resolve());
+                },
 
                 // ---- Web Audio cues: users cannot look at the phone mid-hang ----
                 beep(freq = 880, dur = 0.15, type = 'sine') {

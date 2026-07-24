@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Models\SetLog;
+use App\Actions\LogSet;
 use App\Models\Workout;
 use App\Models\WorkoutLog;
 use Illuminate\Support\Facades\Auth;
@@ -174,32 +174,24 @@ class WorkoutRunner extends Component
         return $log;
     }
 
-    /** Toggle a single set's completed state and persist it. */
-    public function toggleSet(int $weId, ?int $exerciseId, int $setNumber): void
+    /**
+     * Toggle a single set (online path). Delegates to the LogSet action — the
+     * same validation/scoping the offline queue's endpoint uses. $exerciseId is
+     * accepted for signature stability but ignored; the action derives it.
+     */
+    public function toggleSet(int $weId, ?int $exerciseId, int $setNumber, LogSet $logSet): void
     {
-        // All action args are client-supplied. Resolve the row against THIS
-        // workout and derive exercise_id server-side ($exerciseId is ignored)
-        // so a crafted call can't persist set logs for arbitrary exercises,
-        // mismatched exercise ids, or out-of-range set numbers.
-        $we = $this->workout->workoutExercises()->whereKey($weId)->first();
-        abort_if($we === null, 422);
-        abort_unless($setNumber >= 1 && $setNumber <= $we->sets, 422);
-
-        $log = $this->ensureLog();
         $key = "{$weId}:{$setNumber}";
         $newState = ! ($this->done[$key] ?? false);
 
-        SetLog::updateOrCreate(
-            [
-                'workout_log_id' => $log->id,
-                'exercise_id' => $we->exercise_id,
-                'set_number' => $setNumber,
-            ],
-            ['completed' => $newState],
-        );
+        $setLog = $logSet->handle(Auth::user(), $this->workout, $weId, $setNumber, $newState);
 
+        $this->logId = $setLog->workout_log_id;
         $this->done[$key] = $newState;
     }
+
+    /** Completed-set count read from persistence (the offline queue writes there too). */
+    public int $completedCount = 0;
 
     public function completeSession(): void
     {
@@ -215,6 +207,7 @@ class WorkoutRunner extends Component
             'perceived_effort' => $this->perceivedEffort,
         ]);
 
+        $this->completedCount = $log->setLogs()->where('completed', true)->count();
         $this->finished = true;
         $this->dispatch('session-finished'); // release wake lock client-side
     }
