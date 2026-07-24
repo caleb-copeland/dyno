@@ -4,6 +4,8 @@
 @section('content')
     <h1 style="font-size:30px;font-weight:800;letter-spacing:-.02em;margin:6px 0 16px;">Progress</h1>
 
+    @include('partials.push-toggle')
+
     {{-- ---------- Baseline tests ---------- --}}
     <div class="label" style="margin-bottom:8px;">Baseline tests</div>
     @foreach ($tests as $t)

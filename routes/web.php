@@ -19,6 +19,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/tests/{key}', BaselineTest::class)->name('tests.run');
     Route::get('/run/{workout}', WorkoutRunner::class)->name('run');
     Route::post('/api/set-log', [\App\Http\Controllers\SetLogController::class, 'store'])->name('api.set-log');
+
+    Route::get('/api/push/key', [\App\Http\Controllers\PushController::class, 'key'])->name('api.push.key');
+    Route::post('/api/push/subscribe', [\App\Http\Controllers\PushController::class, 'subscribe'])->name('api.push.subscribe');
+    Route::delete('/api/push/subscribe', [\App\Http\Controllers\PushController::class, 'unsubscribe'])->name('api.push.unsubscribe');
 });
 
 Route::middleware('auth')->group(function () {

@@ -58,6 +58,16 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(TestResult::class);
     }
 
+    public function pushSubscriptions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PushSubscription::class);
+    }
+
+    public function schedules(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Schedule::class);
+    }
+
     /** Completed sessions gate the max tests (which are themselves an injury risk). */
     public function completedSessionsCount(): int
     {
