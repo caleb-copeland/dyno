@@ -52,6 +52,9 @@ services:
         environment:
             CONTAINER_ROLE: scheduler # entrypoint skips migrations
         command: ['php', 'artisan', 'schedule:work']
+        # No web server in this container — the image's HTTP healthcheck doesn't apply.
+        healthcheck:
+            disable: true
         depends_on:
             mysql:
                 condition: service_healthy
