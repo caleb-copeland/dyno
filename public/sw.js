@@ -60,8 +60,19 @@ self.addEventListener('fetch', (event) => {
         event.respondWith(
             fetch(request)
                 .then((res) => {
-                    const copy = res.clone();
-                    caches.open(PAGES).then((c) => c.put(request, copy));
+                    // Landing on a guest page (welcome, login, …) means no one is
+                    // signed in here any more — drop cached authenticated pages so
+                    // the next user of this device can't read them offline.
+                    const landed = new URL(res.url || request.url);
+                    const guestPaths = ['/', '/login', '/register', '/forgot-password', '/reset-password'];
+                    if (guestPaths.some((p) => landed.pathname === p || landed.pathname.startsWith(p + '/'))) {
+                        caches.delete(PAGES);
+                        return res;
+                    }
+                    if (res.ok) {
+                        const copy = res.clone();
+                        caches.open(PAGES).then((c) => c.put(request, copy));
+                    }
                     return res;
                 })
                 .catch(() => caches.match(request).then((hit) => hit || caches.match('/offline.html')))

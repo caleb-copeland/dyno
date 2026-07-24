@@ -76,6 +76,13 @@ class ScheduleBuilder extends Component
         $this->saved = false;
         $this->candidateIndex = 0;
 
+        // These are plain public Livewire properties — sanitize before they
+        // reach the generator (unbounded frequencies would let a tampered
+        // request allocate an arbitrarily large sessions array).
+        $this->trainingDays = $this->sanitizeDays($this->trainingDays);
+        $this->climbingDays = $this->sanitizeDays($this->climbingDays);
+        $this->frequencies = $this->sanitizeFrequencies($this->frequencies);
+
         $freq = array_filter($this->frequencies, fn ($n) => (int) $n > 0);
         $this->candidates = array_map(
             fn ($r) => $r['sessions'],
@@ -121,6 +128,17 @@ class ScheduleBuilder extends Component
 
     public function save(): void
     {
+        // `current` is client-mutable — validate every entry before persisting.
+        // A junk focus string would poison the FocusArea enum cast on every
+        // later read (dashboard, reminder cron); a junk day bricks the grid.
+        if (! $this->currentIsValid()) {
+            return;
+        }
+
+        $this->trainingDays = $this->sanitizeDays($this->trainingDays);
+        $this->climbingDays = $this->sanitizeDays($this->climbingDays);
+        $this->frequencies = $this->sanitizeFrequencies($this->frequencies);
+
         if (! empty($this->issuesProperty()['hard']) || empty($this->current)) {
             return;
         }
@@ -178,6 +196,46 @@ class ScheduleBuilder extends Component
             : array_values(array_merge($set, [$value]));
     }
 
+    /** Keep only valid weekday ints (0=Mon…6=Sun). */
+    private function sanitizeDays(array $days): array
+    {
+        return array_values(array_unique(array_filter(
+            array_map(fn ($d) => is_numeric($d) ? (int) $d : -1, $days),
+            fn ($d) => $d >= 0 && $d <= 6,
+        )));
+    }
+
+    /** Keep only known focus areas, with counts clamped to a sane 0–7/week. */
+    private function sanitizeFrequencies(array $frequencies): array
+    {
+        $out = [];
+        foreach (FocusArea::cases() as $c) {
+            $n = $frequencies[$c->value] ?? 0;
+            $out[$c->value] = is_numeric($n) ? max(0, min(7, (int) $n)) : 0;
+        }
+
+        return $out;
+    }
+
+    /** Every session entry must carry a real focus area and an in-range day. */
+    private function currentIsValid(): bool
+    {
+        if (count($this->current) > 14) { // hard ceiling: 2 sessions × 7 days
+            return false;
+        }
+        foreach ($this->current as $s) {
+            if (! is_array($s) || ! is_string($s['focus'] ?? null) || FocusArea::tryFrom($s['focus']) === null) {
+                return false;
+            }
+            $day = $s['day'] ?? null;
+            if (! is_numeric($day) || (int) $day < 0 || (int) $day > 6) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function render()
     {
         // Pre-build the 7-day grid so the Blade view stays declarative.
@@ -191,8 +249,14 @@ class ScheduleBuilder extends Component
             ];
         }
         foreach ($this->current as $index => $s) {
+            // `current` is client-mutable; skip malformed entries instead of
+            // crashing the grid on an unknown day index.
+            if (! is_array($s) || ! is_string($s['focus'] ?? null)
+                || ! is_numeric($s['day'] ?? null) || ! isset($week[(int) $s['day']])) {
+                continue;
+            }
             $focus = FocusArea::tryFrom($s['focus']);
-            $week[$s['day']]['sessions'][] = [
+            $week[(int) $s['day']]['sessions'][] = [
                 'index' => $index,
                 'label' => $focus?->label() ?? ucfirst($s['focus']),
                 'accent' => $focus?->accentHex() ?? '#8A8A90',

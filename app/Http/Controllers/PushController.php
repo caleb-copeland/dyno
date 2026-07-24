@@ -19,7 +19,19 @@ class PushController extends Controller
     public function subscribe(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'endpoint' => ['required', 'string', 'max:1024'],
+            // The server POSTs to this URL later (reminder cron) — require a
+            // real https URL and refuse IP-literal/localhost hosts so the
+            // endpoint can't be aimed at internal services (SSRF). Genuine
+            // push-service endpoints are always https on a public hostname.
+            'endpoint' => ['required', 'string', 'max:1024', 'url:https', function ($attribute, $value, $fail) {
+                $host = parse_url($value, PHP_URL_HOST);
+                if (! is_string($host)
+                    || strcasecmp($host, 'localhost') === 0
+                    || str_ends_with(strtolower($host), '.localhost')
+                    || filter_var(trim($host, '[]'), FILTER_VALIDATE_IP) !== false) {
+                    $fail('The push endpoint must be a public https URL.');
+                }
+            }],
             'keys.p256dh' => ['required', 'string', 'max:255'],
             'keys.auth' => ['required', 'string', 'max:255'],
             'contentEncoding' => ['nullable', 'string', 'max:32'],
