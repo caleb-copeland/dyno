@@ -17,6 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\EnsureUserIsActive::class,
         ]);
+
+        // Behind reverse proxies (Sail nginx, and `tailscale serve` terminating
+        // HTTPS then forwarding HTTP to localhost) so Laravel detects the real
+        // https scheme — otherwise secure cookies / redirects break on login.
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
