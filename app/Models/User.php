@@ -47,4 +47,9 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->role === 'admin';
     }
+
+    public function workoutLogs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(WorkoutLog::class);
+    }
 }
