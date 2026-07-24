@@ -3,9 +3,49 @@
 
 @section('content')
     <div style="display:flex;align-items:baseline;justify-content:space-between;margin:6px 0 18px;">
-        <h1 style="font-size:30px;font-weight:800;letter-spacing:-.02em;margin:0;">Train</h1>
+        <h1 style="font-size:30px;font-weight:800;letter-spacing:-.02em;margin:0;">Today</h1>
         <span class="muted" style="font-weight:600;">{{ now()->format('D, M j') }}</span>
     </div>
+
+    {{-- ---------- Today's plan (from active schedule) ---------- --}}
+    @if ($schedule)
+        @if ($isClimbingToday)
+            <div class="card" style="border:1px solid rgba(239,68,68,.35);text-align:center;">
+                <div class="metric" style="font-size:40px;">🧗</div>
+                <div class="label" style="margin-top:8px;">Climbing day</div>
+                <div class="muted" style="margin-top:6px;font-size:14px;">Maximal finger load — no hangboard today.</div>
+            </div>
+        @endif
+
+        @forelse ($todaySessions as $session)
+            <a @if ($session->workout) href="{{ route('run', $session->workout_id) }}" @endif
+               class="card" style="display:flex;align-items:center;justify-content:space-between;text-decoration:none;color:var(--text);gap:12px;">
+                <div>
+                    <div class="label" style="display:flex;align-items:center;gap:8px;">
+                        <span class="accent-dot" style="background:{{ $session->focus_area->accentHex() }};"></span>
+                        {{ $session->focus_area->label() }}
+                    </div>
+                    <div style="font-weight:800;font-size:22px;margin-top:6px;">{{ $session->workout?->name ?? 'Rest / choose a workout' }}</div>
+                    @if ($session->workout?->estimated_minutes)
+                        <div class="muted" style="font-size:13px;margin-top:4px;">~{{ $session->workout->estimated_minutes }} min</div>
+                    @endif
+                </div>
+                @if ($session->workout)
+                    <span class="btn btn--primary" style="min-height:44px;padding:10px 18px;">Start</span>
+                @endif
+            </a>
+        @empty
+            @unless ($isClimbingToday)
+                <div class="card" style="text-align:center;">
+                    <div class="metric" style="font-size:40px;">🌙</div>
+                    <div class="label" style="margin-top:8px;">Rest day</div>
+                    <div class="muted" style="margin-top:6px;font-size:14px;">Nothing scheduled — recover.</div>
+                </div>
+            @endunless
+        @endforelse
+
+        <div class="label" style="margin:22px 0 8px;">Or pick another</div>
+    @endif
 
     @if ($recent->isNotEmpty())
         <div class="label" style="margin-bottom:8px;">Recent</div>

@@ -25,16 +25,6 @@
         @yield('content')
     </main>
 
-    <nav class="tabbar">
-        <a class="tab" href="{{ route('dashboard') }}" @if(request()->routeIs('dashboard')) aria-current="page" @endif>
-            <span class="tab-ico">◎</span>Today
-        </a>
-        <a class="tab" href="{{ route('history') }}" @if(request()->routeIs('history')) aria-current="page" @endif>
-            <span class="tab-ico">≡</span>History
-        </a>
-        <a class="tab" href="{{ route('profile.edit') }}" @if(request()->routeIs('profile.*')) aria-current="page" @endif>
-            <span class="tab-ico">◔</span>Profile
-        </a>
-    </nav>
+    @include('partials.dyno-tabs')
 </body>
 </html>
