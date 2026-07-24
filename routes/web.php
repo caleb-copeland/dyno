@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TrainController;
+use App\Livewire\BaselineTest;
 use App\Livewire\ScheduleBuilder;
 use App\Livewire\WorkoutRunner;
 use Illuminate\Support\Facades\Route;
@@ -13,7 +14,9 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [TrainController::class, 'today'])->name('dashboard');
     Route::get('/history', [TrainController::class, 'history'])->name('history');
+    Route::get('/progress', [TrainController::class, 'progress'])->name('progress');
     Route::get('/schedule', ScheduleBuilder::class)->name('schedule');
+    Route::get('/tests/{key}', BaselineTest::class)->name('tests.run');
     Route::get('/run/{workout}', WorkoutRunner::class)->name('run');
 });
 

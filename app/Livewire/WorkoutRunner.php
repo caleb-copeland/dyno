@@ -71,7 +71,10 @@ class WorkoutRunner extends Component
                 $parts[] = "{$we->target_duration_s}s hold";
             }
             if ($we->prescription_basis->value === 'percent_of_test' && $we->percent_of_test) {
-                $parts[] = (int) round($we->percent_of_test * 100).'% max';
+                $pct = (int) round($we->percent_of_test * 100);
+                // Resolve to a concrete load from the user's latest baseline test.
+                $target = $exercise ? $this->percentTarget($exercise->focus_area, (float) $we->percent_of_test) : null;
+                $parts[] = $target ? "{$target} ({$pct}% max)" : "{$pct}% max";
             }
             if ($we->prescription_basis->value === 'rpe') {
                 $parts[] = 'RPE';
@@ -101,6 +104,28 @@ class WorkoutRunner extends Component
                 'summary' => implode(' · ', $parts),
             ];
         })->all();
+    }
+
+    /** Latest baseline result for a focus area × percentage → "40kg", or null if untested. */
+    private function percentTarget(\App\Enums\FocusArea $focus, float $percent): ?string
+    {
+        $key = \App\Support\BaselineTests::forFocus($focus);
+        if (! $key) {
+            return null;
+        }
+
+        $latest = \App\Models\TestResult::where('user_id', Auth::id())
+            ->where('metric', $key)
+            ->latest('tested_at')
+            ->first();
+
+        if (! $latest) {
+            return null;
+        }
+
+        $target = round((float) $latest->value * $percent, 1);
+
+        return rtrim(rtrim(number_format($target, 1), '0'), '.').$latest->unit;
     }
 
     protected function hydrateDoneFrom(WorkoutLog $log): void

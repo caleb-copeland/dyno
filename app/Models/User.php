@@ -52,4 +52,15 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->hasMany(WorkoutLog::class);
     }
+
+    public function testResults(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TestResult::class);
+    }
+
+    /** Completed sessions gate the max tests (which are themselves an injury risk). */
+    public function completedSessionsCount(): int
+    {
+        return $this->workoutLogs()->whereNotNull('completed_at')->count();
+    }
 }
