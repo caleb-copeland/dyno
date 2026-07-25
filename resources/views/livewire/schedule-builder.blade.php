@@ -45,10 +45,10 @@
     @if ($generated)
         {{-- ---------- Warnings ---------- --}}
         @foreach ($issues['hard'] as $msg)
-            <div class="card" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:#FCA5A5;font-size:14px;">⛔ {{ $msg }}</div>
+            <div class="card" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:var(--danger-soft);font-size:14px;">⛔ {{ $msg }}</div>
         @endforeach
         @foreach ($issues['soft'] as $msg)
-            <div class="card" style="background:rgba(245,165,36,.10);color:#FBBF24;font-size:14px;padding:12px 16px;">⚠ {{ $msg }}</div>
+            <div class="card" style="background:rgba(245,165,36,.10);color:var(--warn-soft);font-size:14px;padding:12px 16px;">⚠ {{ $msg }}</div>
         @endforeach
 
         @if (empty($current))
@@ -62,7 +62,7 @@
                     <div style="display:flex;align-items:center;justify-content:space-between;">
                         <span class="label">{{ $day['short'] }}</span>
                         @if ($day['isClimbing'])
-                            <span class="pill" style="background:rgba(239,68,68,.15);color:#FCA5A5;">🧗 climbing</span>
+                            <span class="pill" style="background:rgba(239,68,68,.15);color:var(--danger-soft);">🧗 climbing</span>
                         @endif
                     </div>
 
@@ -88,7 +88,7 @@
         </div>
 
         @if ($saved)
-            <div class="card" style="background:rgba(34,197,94,.12);color:#86EFAC;text-align:center;margin-top:10px;">✓ Schedule saved — see it on <a href="{{ route('dashboard') }}" style="color:#86EFAC;text-decoration:underline;">Today</a>.</div>
+            <div class="card" style="background:rgba(34,197,94,.12);color:var(--success-soft);text-align:center;margin-top:10px;">✓ Schedule saved — see it on <a href="{{ route('dashboard') }}" style="color:var(--success-soft);text-decoration:underline;">Today</a>.</div>
         @endif
     @endif
 </div>

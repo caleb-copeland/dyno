@@ -15,6 +15,16 @@
         --arms: #A855F7;
         --legs: #14B8A6;
         --push: #EF4444;
+        /* app accent — outlines, focus, active states, primary CTA */
+        --accent: #F5A524;
+        /* semantic status aliases — one source for feedback colors */
+        --danger: var(--push);
+        --success: var(--back);
+        --warn: var(--grip);
+        --info: var(--core);
+        --danger-soft: #FCA5A5;
+        --success-soft: #86EFAC;
+        --warn-soft: #FBBF24;
     }
 
     * { box-sizing: border-box; }
@@ -58,9 +68,9 @@
         transition: transform .06s ease, background .15s ease;
     }
     .btn:active { transform: scale(.98); }
-    .btn:focus-visible { outline: 3px solid var(--core); outline-offset: 2px; }
+    .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     .btn--full { width: 100%; }
-    .btn--primary { background: var(--text); color: #0A0A0B; }
+    .btn--primary { background: var(--accent); color: var(--bg); }
     .btn--ghost { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
 
     .set-row {
@@ -84,6 +94,19 @@
     .timer-big { font-variant-numeric: tabular-nums; font-size: 72px; font-weight: 800; letter-spacing: -0.04em; }
 
     .pill { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+
+    /* bottom tab bar — single source (was duplicated across layouts) */
+    .tabbar {
+        position: fixed; left: 0; right: 0; bottom: 0;
+        display: flex; justify-content: space-around;
+        background: rgba(20,20,22,.92); backdrop-filter: blur(12px);
+        border-top: 1px solid var(--line); padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
+    }
+    .tab { flex: 1; text-align: center; text-decoration: none; color: var(--text-muted);
+           font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em;
+           padding: 6px; border-radius: 12px; }
+    .tab[aria-current="page"] { color: var(--accent); }
+    .tab-ico { display: block; font-size: 20px; margin-bottom: 3px; }
 
     @media (prefers-reduced-motion: reduce) {
         .btn, .arc__fill { transition: none; }

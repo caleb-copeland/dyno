@@ -18,9 +18,9 @@
                 @endif
             </div>
             @if ($log->isComplete())
-                <span class="pill" style="background:rgba(34,197,94,.15);color:#86EFAC;">Done</span>
+                <span class="pill" style="background:rgba(34,197,94,.15);color:var(--success-soft);">Done</span>
             @elseif ($log->workout_id)
-                <a href="{{ route('run', $log->workout_id) }}" class="pill" style="background:rgba(245,165,36,.15);color:#FBBF24;text-decoration:none;">Resume</a>
+                <a href="{{ route('run', $log->workout_id) }}" class="pill" style="background:rgba(245,165,36,.15);color:var(--warn-soft);text-decoration:none;">Resume</a>
             @else
                 <span class="pill" style="background:rgba(138,138,144,.15);color:var(--text-muted);">Ended</span>
             @endif

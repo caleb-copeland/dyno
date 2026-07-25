@@ -23,7 +23,7 @@
                     </div>
                 </div>
                 @if ($t['retest_due'])
-                    <span class="pill" style="background:rgba(245,165,36,.15);color:#FBBF24;white-space:nowrap;">re-test due</span>
+                    <span class="pill" style="background:rgba(245,165,36,.15);color:var(--warn-soft);white-space:nowrap;">re-test due</span>
                 @endif
             </div>
 
@@ -50,7 +50,7 @@
                     @if ($log->perceived_effort) · RPE {{ $log->perceived_effort }} @endif
                 </div>
             </div>
-            <span class="pill" style="background:rgba(34,197,94,.15);color:#86EFAC;">Done</span>
+            <span class="pill" style="background:rgba(34,197,94,.15);color:var(--success-soft);">Done</span>
         </div>
     @empty
         <div class="card muted" style="text-align:center;">No completed sessions yet.</div>

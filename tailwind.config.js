@@ -14,6 +14,21 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            // Dyno palette — values live once in :root (partials/dyno-styles),
+            // these just expose them as utilities for the Breeze/Tailwind pages.
+            colors: {
+                canvas: 'var(--bg)',
+                surface: 'var(--surface)',
+                'surface-raised': 'var(--surface-raised)',
+                ink: 'var(--text)',
+                muted: 'var(--text-muted)',
+                line: 'var(--line)',
+                accent: 'var(--accent)',
+                core: 'var(--core)',
+                danger: 'var(--push)',
+                success: 'var(--back)',
+                warn: 'var(--grip)',
+            },
         },
     },
 

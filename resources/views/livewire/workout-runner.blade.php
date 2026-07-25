@@ -59,7 +59,7 @@
                         <div class="muted" style="font-size:13px;margin-top:6px;">{{ $item['summary'] }}</div>
                     </div>
                     @if ($item['finger'])
-                        <span class="pill" style="background:rgba(239,68,68,.15);color:#FCA5A5;white-space:nowrap;">⚠ fingers</span>
+                        <span class="pill" style="background:rgba(239,68,68,.15);color:var(--danger-soft);white-space:nowrap;">⚠ fingers</span>
                     @endif
                 </div>
 

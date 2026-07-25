@@ -40,7 +40,7 @@
                        style="flex:1;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:14px;font-size:20px;font-weight:700;{{ $this->warmupComplete ? '' : 'opacity:.5;' }}">
                 <span class="muted" style="font-weight:700;">{{ $def['unit'] }}</span>
             </div>
-            @error('value') <div style="color:#FCA5A5;font-size:13px;margin-top:8px;">{{ $message }}</div> @enderror
+            @error('value') <div style="color:var(--danger-soft);font-size:13px;margin-top:8px;">{{ $message }}</div> @enderror
 
             @unless ($this->warmupComplete)
                 <div class="muted" style="font-size:13px;margin-top:10px;">Finish the warm-up before recording — an unwarmed max test is dangerous and meaningless.</div>

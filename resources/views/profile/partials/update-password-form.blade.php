@@ -1,10 +1,10 @@
 <section>
     <header>
-        <h2 class="text-lg font-medium text-[#F2F2F3]">
+        <h2 class="text-lg font-medium text-ink">
             {{ __('Update Password') }}
         </h2>
 
-        <p class="mt-1 text-sm text-[#8A8A90]">
+        <p class="mt-1 text-sm text-muted">
             {{ __('Ensure your account is using a long, random password to stay secure.') }}
         </p>
     </header>
@@ -35,7 +35,7 @@
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 
             @if (session('status') === 'password-updated')
-                <p class="text-sm text-[#8A8A90]">{{ __('Saved.') }}</p>
+                <p class="text-sm text-muted">{{ __('Saved.') }}</p>
             @endif
         </div>
     </form>

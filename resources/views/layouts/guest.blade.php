@@ -17,12 +17,12 @@
         <div class="min-h-screen flex flex-col justify-center items-center px-4 py-10"
              style="padding-bottom: calc(40px + env(safe-area-inset-bottom));">
             <a href="/" class="flex items-center gap-3 mb-8 no-underline">
-                <x-application-logo class="w-11 h-11 fill-current text-[#F2F2F3]" />
-                <span class="text-[#F2F2F3] text-2xl font-extrabold tracking-[-0.03em]">{{ config('app.name', 'Dyno') }}</span>
+                <x-application-logo class="w-11 h-11 fill-current text-ink" />
+                <span class="text-ink text-2xl font-extrabold tracking-[-0.03em]">{{ config('app.name', 'Dyno') }}</span>
             </a>
 
             <div class="w-full sm:max-w-md">
-                <div class="bg-[#141416] rounded-[20px] p-6 sm:p-8">
+                <div class="bg-surface rounded-[20px] p-6 sm:p-8">
                     {{ $slot }}
                 </div>
             </div>
