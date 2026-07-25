@@ -15,7 +15,7 @@
         <div class="mt-4">
             <x-input-label for="email" :value="__('Email')" />
             {{-- Locked to the invited address; the server re-verifies the match. --}}
-            <x-text-input id="email" class="block mt-1 w-full bg-gray-100 dark:bg-gray-900" type="email" name="email" :value="$inviteEmail" required readonly autocomplete="username" />
+            <x-text-input id="email" class="block mt-1 w-full opacity-70" type="email" name="email" :value="$inviteEmail" required readonly autocomplete="username" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
@@ -43,7 +43,7 @@
         </div>
 
         <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
+            <a class="underline text-sm text-[#8A8A90] hover:text-[#F2F2F3] rounded-md focus:outline-none" href="{{ route('login') }}">
                 {{ __('Already registered?') }}
             </a>
 
