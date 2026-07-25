@@ -104,7 +104,7 @@
                 <div class="label" style="margin-bottom:10px;">Perceived effort (RPE)</div>
                 <div style="display:flex;flex-wrap:wrap;gap:8px;">
                     @for ($r = 1; $r <= 10; $r++)
-                        <button type="button" class="btn btn--ghost" style="min-width:44px;min-height:44px;padding:8px;{{ $perceivedEffort === $r ? 'background:var(--core);color:#fff' : '' }}"
+                        <button type="button" class="btn btn--ghost" style="min-width:44px;min-height:44px;padding:8px;{{ $perceivedEffort === $r ? 'background:var(--accent);color:var(--bg)' : '' }}"
                                 wire:click="$set('perceivedEffort', {{ $r }})">{{ $r }}</button>
                     @endfor
                 </div>

@@ -21,7 +21,6 @@
         --danger: var(--push);
         --success: var(--back);
         --warn: var(--grip);
-        --info: var(--core);
         --danger-soft: #FCA5A5;
         --success-soft: #86EFAC;
         --warn-soft: #FBBF24;
@@ -70,7 +69,7 @@
     .btn:active { transform: scale(.98); }
     .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     .btn--full { width: 100%; }
-    .btn--primary { background: var(--accent); color: var(--bg); }
+    .btn--primary { background: var(--text); color: var(--bg); }
     .btn--ghost { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
 
     .set-row {
@@ -105,7 +104,7 @@
     .tab { flex: 1; text-align: center; text-decoration: none; color: var(--text-muted);
            font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em;
            padding: 6px; border-radius: 12px; }
-    .tab[aria-current="page"] { color: var(--accent); }
+    .tab[aria-current="page"] { color: var(--text); }
     .tab-ico { display: block; font-size: 20px; margin-bottom: 3px; }
 
     @media (prefers-reduced-motion: reduce) {
