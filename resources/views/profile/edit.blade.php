@@ -2,6 +2,10 @@
 
 @section('title', 'Profile')
 
+@push('head')
+    @vite(['resources/css/app.css'])
+@endpush
+
 @section('content')
     <h1 style="font-size:28px;font-weight:800;letter-spacing:-0.03em;margin:4px 0 18px;">{{ __('Profile') }}</h1>
 

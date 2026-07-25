@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#0A0A0B">
     <title>@yield('title', 'Dyno')</title>
     @include('partials.pwa-head')
+    @stack('head')
     @include('partials.dyno-styles')
     <style>
         .tabbar {
