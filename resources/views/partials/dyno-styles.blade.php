@@ -16,7 +16,7 @@
         --legs: #14B8A6;
         --push: #EF4444;
         /* app accent — outlines, focus, active states, primary CTA */
-        --accent: #F5A524;
+        --accent: var(--legs);
         /* semantic status aliases — one source for feedback colors */
         --danger: var(--push);
         --success: var(--back);
