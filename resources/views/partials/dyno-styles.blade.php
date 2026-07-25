@@ -28,6 +28,9 @@
 
     * { box-sizing: border-box; }
 
+    /* accent focus outline everywhere — replaces the UA blue, one source */
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
     html, body {
         margin: 0;
         background: var(--bg);
