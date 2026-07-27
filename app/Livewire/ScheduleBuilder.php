@@ -2,10 +2,9 @@
 
 namespace App\Livewire;
 
-use App\Enums\FocusArea;
+use App\Enums\DayOfWeek;
 use App\Models\Schedule;
 use App\Models\Workout;
-use App\Services\ScheduleGenerator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -14,260 +13,136 @@ use Livewire\Component;
 #[Layout('layouts.dyno-live')]
 class ScheduleBuilder extends Component
 {
-    /** @var array<string,int> focus_area => sessions/week */
-    public array $frequencies = [];
+    /** Ceilings — `days` is client-mutable, so bound what a request can allocate. */
+    private const MAX_PER_DAY = 6;
 
-    /** @var array<int,int> */
-    public array $trainingDays = [0, 1, 2, 3, 4];
+    private const MAX_TOTAL = 42;
 
-    /** @var array<int,int> declared climbing days (finger-maximal) */
-    public array $climbingDays = [];
-
-    /** @var array<int, array{focus:string, day:int}> the working (editable) week */
-    public array $current = [];
-
-    /** @var array<int, array<int, array{focus:string, day:int}>> candidate arrangements for shuffle */
-    public array $candidates = [];
-
-    public int $candidateIndex = 0;
-
-    public bool $generated = false;
+    /** @var array<int, array<int, int>> day (0=Mon…6=Sun) => ordered workout ids */
+    public array $days = [];
 
     public bool $saved = false;
 
     public function mount(): void
     {
-        foreach (FocusArea::cases() as $c) {
-            $this->frequencies[$c->value] = 0;
+        foreach (range(0, 6) as $d) {
+            $this->days[$d] = [];
         }
-        // Sensible starting point.
-        $this->frequencies = array_merge($this->frequencies, [
-            'grip' => 2, 'pullups' => 2, 'core' => 1, 'legs' => 1,
-        ]);
 
-        // Load the user's active schedule into the editor if one exists.
-        $existing = Schedule::where('user_id', Auth::id())->where('active', true)->latest()->first();
+        $existing = Schedule::where('user_id', Auth::id())
+            ->where('active', true)
+            ->with('sessions')
+            ->latest()
+            ->first();
+
         if ($existing) {
-            $this->trainingDays = $existing->training_days ?? $this->trainingDays;
-            $this->climbingDays = $existing->climbing_days ?? [];
-            $this->frequencies = array_merge($this->frequencies, $existing->frequencies ?? []);
-            $this->current = $existing->sessions->map(fn ($s) => [
-                'focus' => $s->focus_area->value, 'day' => (int) $s->day_of_week,
-            ])->all();
-            $this->generated = ! empty($this->current);
+            foreach ($existing->sessions as $s) {
+                if ($s->workout_id !== null && isset($this->days[(int) $s->day_of_week])) {
+                    $this->days[(int) $s->day_of_week][] = (int) $s->workout_id;
+                }
+            }
         }
     }
 
-    public function toggleTrainingDay(int $day): void
+    public function addWorkout(int $day, mixed $workoutId): void
     {
-        $this->trainingDays = $this->toggle($this->trainingDays, $day);
-        // A day can't be both a training and a climbing day slot for our purposes.
-        $this->climbingDays = array_values(array_diff($this->climbingDays, [$day]));
-    }
-
-    public function toggleClimbingDay(int $day): void
-    {
-        $this->climbingDays = $this->toggle($this->climbingDays, $day);
-        $this->trainingDays = array_values(array_diff($this->trainingDays, [$day]));
-    }
-
-    public function generate(ScheduleGenerator $generator): void
-    {
-        $this->saved = false;
-        $this->candidateIndex = 0;
-
-        // These are plain public Livewire properties — sanitize before they
-        // reach the generator (unbounded frequencies would let a tampered
-        // request allocate an arbitrarily large sessions array).
-        $this->trainingDays = $this->sanitizeDays($this->trainingDays);
-        $this->climbingDays = $this->sanitizeDays($this->climbingDays);
-        $this->frequencies = $this->sanitizeFrequencies($this->frequencies);
-
-        $freq = array_filter($this->frequencies, fn ($n) => (int) $n > 0);
-        $this->candidates = array_map(
-            fn ($r) => $r['sessions'],
-            $generator->generate($this->trainingDays, $this->climbingDays, $freq),
-        );
-
-        $this->current = $this->candidates[0] ?? [];
-        $this->generated = true;
-    }
-
-    public function shuffle(): void
-    {
-        if (count($this->candidates) < 2) {
+        if ($day < 0 || $day > 6 || ! is_numeric($workoutId)) {
             return;
         }
-        $this->candidateIndex = ($this->candidateIndex + 1) % count($this->candidates);
-        $this->current = $this->candidates[$this->candidateIndex];
-        $this->saved = false;
-    }
-
-    public function moveSession(int $index, int $direction): void
-    {
-        if (! isset($this->current[$index]) || empty($this->trainingDays)) {
+        if (count($this->days[$day] ?? []) >= self::MAX_PER_DAY) {
             return;
         }
-        $days = $this->trainingDays;
-        sort($days);
-        $pos = array_search($this->current[$index]['day'], $days, true);
-        if ($pos === false) {
-            $pos = 0;
+        $id = (int) $workoutId;
+        if (! Workout::where('id', $id)->where('is_published', true)->exists()) {
+            return;
         }
-        $next = ($pos + $direction + count($days)) % count($days);
-        $this->current[$index]['day'] = $days[$next];
+
+        $this->days[$day][] = $id;
         $this->saved = false;
     }
 
-    public function removeSession(int $index): void
+    public function removeWorkout(int $day, int $index): void
     {
-        unset($this->current[$index]);
-        $this->current = array_values($this->current);
+        if (! isset($this->days[$day][$index])) {
+            return;
+        }
+        unset($this->days[$day][$index]);
+        $this->days[$day] = array_values($this->days[$day]);
         $this->saved = false;
     }
 
     public function save(): void
     {
-        // `current` is client-mutable — validate every entry before persisting.
-        // A junk focus string would poison the FocusArea enum cast on every
-        // later read (dashboard, reminder cron); a junk day bricks the grid.
-        if (! $this->currentIsValid()) {
-            return;
-        }
+        // `days` is client-supplied. Walk only the real weekday buckets, resolve
+        // every id against the published-workout set (so an unpublished/foreign
+        // id can't be persisted), and cap the total. Bail if nothing survives —
+        // a tampered request must not create an empty active schedule or
+        // deactivate the existing one.
+        $workouts = Workout::where('is_published', true)->get()->keyBy('id');
 
-        $this->trainingDays = $this->sanitizeDays($this->trainingDays);
-        $this->climbingDays = $this->sanitizeDays($this->climbingDays);
-        $this->frequencies = $this->sanitizeFrequencies($this->frequencies);
-
-        if (! empty($this->issuesProperty()['hard']) || empty($this->current)) {
-            return;
-        }
-
-        DB::transaction(function () {
-            Schedule::where('user_id', Auth::id())->update(['active' => false]);
-
-            $schedule = Schedule::create([
-                'user_id' => Auth::id(),
-                'active' => true,
-                'training_days' => array_values($this->trainingDays),
-                'climbing_days' => array_values($this->climbingDays),
-                'frequencies' => array_filter($this->frequencies, fn ($n) => (int) $n > 0),
-            ]);
-
-            // Rotate through published workouts of each focus area.
-            $byFocus = Workout::where('is_published', true)->get()->groupBy(fn ($w) => $w->focus_area->value);
-            $cursor = [];
-
-            $positions = [];
-            foreach ($this->current as $s) {
-                $focus = $s['focus'];
-                $pool = $byFocus->get($focus);
-                $workoutId = null;
-                if ($pool && $pool->count()) {
-                    $i = $cursor[$focus] ?? 0;
-                    $workoutId = $pool[$i % $pool->count()]->id;
-                    $cursor[$focus] = $i + 1;
+        $rows = [];
+        foreach (range(0, 6) as $day) {
+            $position = 0;
+            foreach ((array) ($this->days[$day] ?? []) as $wid) {
+                if (! is_numeric($wid)) {
+                    continue;
                 }
-                $day = (int) $s['day'];
-                $positions[$day] = ($positions[$day] ?? -1) + 1;
-
-                $schedule->sessions()->create([
+                $workout = $workouts->get((int) $wid);
+                if ($workout === null) {
+                    continue;
+                }
+                if (count($rows) >= self::MAX_TOTAL) {
+                    break 2;
+                }
+                $rows[] = [
                     'day_of_week' => $day,
-                    'focus_area' => $focus,
-                    'workout_id' => $workoutId,
-                    'position' => $positions[$day],
-                ]);
+                    'focus_area' => $workout->focus_area->value,
+                    'workout_id' => $workout->id,
+                    'position' => $position++,
+                ];
             }
+        }
+
+        if (empty($rows)) {
+            return;
+        }
+
+        DB::transaction(function () use ($rows) {
+            Schedule::where('user_id', Auth::id())->update(['active' => false]);
+            $schedule = Schedule::create(['user_id' => Auth::id(), 'active' => true]);
+            $schedule->sessions()->createMany($rows);
         });
 
         $this->saved = true;
     }
 
-    /** @return array{hard: array<int,string>, soft: array<int,string>} */
-    public function issuesProperty(): array
-    {
-        return app(ScheduleGenerator::class)->issues($this->current, $this->climbingDays);
-    }
-
-    private function toggle(array $set, int $value): array
-    {
-        return in_array($value, $set, true)
-            ? array_values(array_diff($set, [$value]))
-            : array_values(array_merge($set, [$value]));
-    }
-
-    /** Keep only valid weekday ints (0=Mon…6=Sun). */
-    private function sanitizeDays(array $days): array
-    {
-        return array_values(array_unique(array_filter(
-            array_map(fn ($d) => is_numeric($d) ? (int) $d : -1, $days),
-            fn ($d) => $d >= 0 && $d <= 6,
-        )));
-    }
-
-    /** Keep only known focus areas, with counts clamped to a sane 0–7/week. */
-    private function sanitizeFrequencies(array $frequencies): array
-    {
-        $out = [];
-        foreach (FocusArea::cases() as $c) {
-            $n = $frequencies[$c->value] ?? 0;
-            $out[$c->value] = is_numeric($n) ? max(0, min(7, (int) $n)) : 0;
-        }
-
-        return $out;
-    }
-
-    /** Every session entry must carry a real focus area and an in-range day. */
-    private function currentIsValid(): bool
-    {
-        if (count($this->current) > 14) { // hard ceiling: 2 sessions × 7 days
-            return false;
-        }
-        foreach ($this->current as $s) {
-            if (! is_array($s) || ! is_string($s['focus'] ?? null) || FocusArea::tryFrom($s['focus']) === null) {
-                return false;
-            }
-            $day = $s['day'] ?? null;
-            if (! is_numeric($day) || (int) $day < 0 || (int) $day > 6) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     public function render()
     {
-        // Pre-build the 7-day grid so the Blade view stays declarative.
+        $published = Workout::where('is_published', true)->orderBy('name')->get();
+        $byId = $published->keyBy('id');
+
         $week = [];
-        foreach (\App\Enums\DayOfWeek::cases() as $d) {
-            $week[$d->value] = [
-                'short' => $d->short(),
-                'isClimbing' => in_array($d->value, $this->climbingDays, true),
-                'isTraining' => in_array($d->value, $this->trainingDays, true),
-                'sessions' => [],
-            ];
-        }
-        foreach ($this->current as $index => $s) {
-            // `current` is client-mutable; skip malformed entries instead of
-            // crashing the grid on an unknown day index.
-            if (! is_array($s) || ! is_string($s['focus'] ?? null)
-                || ! is_numeric($s['day'] ?? null) || ! isset($week[(int) $s['day']])) {
-                continue;
+        foreach (DayOfWeek::cases() as $d) {
+            $items = [];
+            foreach ($this->days[$d->value] ?? [] as $index => $wid) {
+                $workout = $byId->get((int) $wid);
+                if ($workout === null) {
+                    continue;
+                }
+                $items[] = [
+                    'index' => $index,
+                    'name' => $workout->name,
+                    'focus' => $workout->focus_area->label(),
+                    'accent' => $workout->focus_area->accentHex(),
+                    'minutes' => $workout->estimated_minutes,
+                ];
             }
-            $focus = FocusArea::tryFrom($s['focus']);
-            $week[(int) $s['day']]['sessions'][] = [
-                'index' => $index,
-                'label' => $focus?->label() ?? ucfirst($s['focus']),
-                'accent' => $focus?->accentHex() ?? '#8A8A90',
-            ];
+            $week[$d->value] = ['label' => $d->label(), 'items' => $items];
         }
 
         return view('livewire.schedule-builder', [
-            'issues' => $this->issuesProperty(),
             'week' => $week,
-            'focusOptions' => FocusArea::options(),
-            'dayLabels' => \App\Enums\DayOfWeek::shortMap(),
+            'options' => $published->groupBy(fn (Workout $w) => $w->focus_area->label()),
         ]);
     }
 }

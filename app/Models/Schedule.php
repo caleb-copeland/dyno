@@ -12,18 +12,12 @@ class Schedule extends Model
         'user_id',
         'active',
         'week_start_day',
-        'training_days',
-        'climbing_days',
-        'frequencies',
     ];
 
     protected function casts(): array
     {
         return [
             'active' => 'boolean',
-            'training_days' => 'array',
-            'climbing_days' => 'array',
-            'frequencies' => 'array',
         ];
     }
 

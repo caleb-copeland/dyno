@@ -22,7 +22,7 @@ class TrainController extends Controller
             ->first();
 
         $todaySessions = $schedule ? $schedule->sessions : collect();
-        $isClimbingToday = $schedule && in_array($todayNum, $schedule->climbing_days ?? [], true);
+        $isClimbingToday = false;
 
         $workouts = Workout::query()
             ->where('is_published', true)

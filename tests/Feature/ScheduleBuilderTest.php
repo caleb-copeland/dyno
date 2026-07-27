@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Livewire\ScheduleBuilder;
 use App\Models\Schedule;
 use App\Models\User;
+use App\Models\Workout;
 use Database\Seeders\LibrarySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -25,59 +26,79 @@ class ScheduleBuilderTest extends TestCase
         $this->actingAs($user)->get(route('schedule'))->assertOk()->assertSee('Schedule');
     }
 
-    public function test_generate_produces_an_editable_week(): void
-    {
-        $user = User::factory()->create();
-
-        // 6 sessions requested → 6 placed, and marked generated.
-        $component = Livewire::actingAs($user)->test(ScheduleBuilder::class)
-            ->set('frequencies', ['grip' => 2, 'pullups' => 2, 'core' => 1, 'legs' => 1])
-            ->set('trainingDays', [0, 1, 2, 3, 4])
-            ->set('climbingDays', [5])
-            ->call('generate')
-            ->assertSet('generated', true);
-
-        $this->assertCount(6, $component->get('current'));
-    }
-
-    public function test_saving_persists_an_active_schedule_and_deactivates_prior(): void
+    public function test_adding_workouts_and_saving_persists_ordered_sessions(): void
     {
         $this->seed(LibrarySeeder::class);
         $user = User::factory()->create();
+        $w1 = Workout::where('is_published', true)->first();
+        $w2 = Workout::where('is_published', true)->where('id', '!=', $w1->id)->first();
 
-        // A pre-existing active schedule that must be deactivated.
-        $old = Schedule::create(['user_id' => $user->id, 'active' => true, 'training_days' => [0]]);
+        Livewire::actingAs($user)->test(ScheduleBuilder::class)
+            ->call('addWorkout', 0, $w1->id)   // Monday
+            ->call('addWorkout', 0, $w2->id)   // Monday, stacked
+            ->call('addWorkout', 2, $w1->id)   // Wednesday
+            ->call('save')
+            ->assertSet('saved', true);
 
-        Livewire::actingAs($user)
-            ->test(ScheduleBuilder::class)
-            ->set('frequencies', ['grip' => 1, 'pullups' => 1, 'legs' => 1])
-            ->set('trainingDays', [0, 2, 4])
-            ->set('climbingDays', [])
-            ->call('generate')
+        $active = Schedule::where('user_id', $user->id)->where('active', true)->firstOrFail();
+        $this->assertSame(3, $active->sessions()->count());
+
+        $monday = $active->sessions()->where('day_of_week', 0)->orderBy('position')->get();
+        $this->assertEquals([$w1->id, $w2->id], $monday->pluck('workout_id')->all());
+        $this->assertEquals([0, 1], $monday->pluck('position')->all());
+        // focus_area is denormalised from the chosen workout.
+        $this->assertSame($w1->focus_area->value, $monday->first()->focus_area->value);
+    }
+
+    public function test_saving_deactivates_prior_active_schedule(): void
+    {
+        $this->seed(LibrarySeeder::class);
+        $user = User::factory()->create();
+        $old = Schedule::create(['user_id' => $user->id, 'active' => true]);
+        $workout = Workout::where('is_published', true)->first();
+
+        Livewire::actingAs($user)->test(ScheduleBuilder::class)
+            ->call('addWorkout', 3, $workout->id)
             ->call('save')
             ->assertSet('saved', true);
 
         $this->assertFalse($old->fresh()->active);
-        $active = Schedule::where('user_id', $user->id)->where('active', true)->first();
-        $this->assertNotNull($active);
-        $this->assertGreaterThan(0, $active->sessions()->count());
-        // Grip session should have been assigned a published grip workout.
-        $grip = $active->sessions()->where('focus_area', 'grip')->first();
-        $this->assertNotNull($grip->workout_id);
+        $this->assertSame(1, Schedule::where('user_id', $user->id)->where('active', true)->count());
     }
 
-    public function test_save_is_blocked_when_a_hard_rule_is_violated(): void
+    public function test_workout_can_be_removed_before_saving(): void
+    {
+        $this->seed(LibrarySeeder::class);
+        $user = User::factory()->create();
+        $w1 = Workout::where('is_published', true)->first();
+        $w2 = Workout::where('is_published', true)->where('id', '!=', $w1->id)->first();
+
+        Livewire::actingAs($user)->test(ScheduleBuilder::class)
+            ->call('addWorkout', 1, $w1->id)
+            ->call('addWorkout', 1, $w2->id)
+            ->call('removeWorkout', 1, 0)
+            ->call('save')
+            ->assertSet('saved', true);
+
+        $active = Schedule::where('user_id', $user->id)->where('active', true)->firstOrFail();
+        $this->assertSame(1, $active->sessions()->count());
+        $this->assertEquals($w2->id, $active->sessions()->first()->workout_id);
+    }
+
+    public function test_unknown_or_unpublished_workout_is_rejected(): void
     {
         $user = User::factory()->create();
+        $draft = Workout::create([
+            'name' => 'Draft', 'focus_area' => 'grip', 'level' => 'beginner',
+            'estimated_minutes' => 10, 'is_published' => false,
+        ]);
 
-        Livewire::actingAs($user)
-            ->test(ScheduleBuilder::class)
-            // Force a hard violation: grip on Mon, climbing Tue (consecutive finger days).
-            ->set('current', [['focus' => 'grip', 'day' => 0]])
-            ->set('climbingDays', [1])
-            ->set('generated', true)
+        Livewire::actingAs($user)->test(ScheduleBuilder::class)
+            ->call('addWorkout', 0, 999999)      // unknown id
+            ->call('addWorkout', 0, $draft->id)  // unpublished
+            ->assertSet('days.0', [])            // neither was added
             ->call('save')
-            ->assertSet('saved', false);
+            ->assertSet('saved', false);         // nothing to save
 
         $this->assertSame(0, Schedule::where('user_id', $user->id)->count());
     }
@@ -88,8 +109,8 @@ class ScheduleBuilderTest extends TestCase
         $user = User::factory()->create();
         $todayNum = now()->dayOfWeekIso - 1;
 
-        $schedule = Schedule::create(['user_id' => $user->id, 'active' => true, 'training_days' => [$todayNum]]);
-        $workout = \App\Models\Workout::where('is_published', true)->first();
+        $schedule = Schedule::create(['user_id' => $user->id, 'active' => true]);
+        $workout = Workout::where('is_published', true)->first();
         $schedule->sessions()->create([
             'day_of_week' => $todayNum,
             'focus_area' => $workout->focus_area->value,

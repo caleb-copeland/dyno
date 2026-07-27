@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Livewire\ScheduleBuilder;
 use App\Models\Schedule;
 use App\Models\User;
+use App\Models\Workout;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -19,64 +20,56 @@ class SecurityHardeningTest extends TestCase
 
     // ---- ScheduleBuilder: client-mutable properties must be sanitized ----
 
-    public function test_save_rejects_an_unknown_focus_area(): void
+    public function test_save_rejects_foreign_or_unpublished_workouts(): void
     {
         $user = User::factory()->create();
+        // Unpublished workouts and non-existent ids must not reach the schedule;
+        // a foreign focus would otherwise poison the FocusArea cast downstream.
+        $draft = Workout::create([
+            'name' => 'Draft', 'focus_area' => 'grip', 'level' => 'beginner',
+            'estimated_minutes' => 10, 'is_published' => false,
+        ]);
 
-        // A junk focus string would poison the FocusArea enum cast on every
-        // later read (dashboard, reminder cron) if it reached the database.
         Livewire::actingAs($user)
             ->test(ScheduleBuilder::class)
-            ->set('current', [['focus' => 'evil', 'day' => 0]])
-            ->set('generated', true)
+            ->set('days.0', [$draft->id, 999999])
+            ->call('save')
+            ->assertSet('saved', false);
+
+        // Nothing valid survived, so no empty active schedule is created either.
+        $this->assertSame(0, Schedule::where('user_id', $user->id)->count());
+    }
+
+    public function test_save_ignores_out_of_range_days(): void
+    {
+        $this->seed(\Database\Seeders\LibrarySeeder::class);
+        $user = User::factory()->create();
+        $workout = Workout::where('is_published', true)->first();
+
+        Livewire::actingAs($user)
+            ->test(ScheduleBuilder::class)
+            ->set('days.42', [$workout->id]) // bogus weekday bucket
             ->call('save')
             ->assertSet('saved', false);
 
         $this->assertSame(0, Schedule::where('user_id', $user->id)->count());
     }
 
-    public function test_save_rejects_an_out_of_range_day(): void
+    public function test_save_caps_total_sessions(): void
     {
+        $this->seed(\Database\Seeders\LibrarySeeder::class);
         $user = User::factory()->create();
+        $workout = Workout::where('is_published', true)->first();
 
+        // The client can send any-sized array; the server caps what it persists.
         Livewire::actingAs($user)
             ->test(ScheduleBuilder::class)
-            ->set('current', [['focus' => 'grip', 'day' => 42]])
-            ->set('generated', true)
+            ->set('days.0', array_fill(0, 100, $workout->id))
             ->call('save')
-            ->assertSet('saved', false);
+            ->assertSet('saved', true);
 
-        $this->assertSame(0, Schedule::where('user_id', $user->id)->count());
-    }
-
-    public function test_generate_clamps_absurd_frequencies(): void
-    {
-        $user = User::factory()->create();
-
-        // Unclamped, this would try to build a 500k-element sessions array.
-        $component = Livewire::actingAs($user)
-            ->test(ScheduleBuilder::class)
-            ->set('frequencies', ['grip' => 500000, 'bogus_area' => 3])
-            ->call('generate')
-            ->assertSet('generated', true);
-
-        $frequencies = $component->get('frequencies');
-        $this->assertLessThanOrEqual(7, $frequencies['grip']);
-        $this->assertArrayNotHasKey('bogus_area', $frequencies);
-    }
-
-    public function test_generate_discards_invalid_day_numbers(): void
-    {
-        $user = User::factory()->create();
-
-        $component = Livewire::actingAs($user)
-            ->test(ScheduleBuilder::class)
-            ->set('trainingDays', [0, 1, '99', -5])
-            ->set('climbingDays', [77])
-            ->call('generate');
-
-        $this->assertSame([0, 1], $component->get('trainingDays'));
-        $this->assertSame([], $component->get('climbingDays'));
+        $active = Schedule::where('user_id', $user->id)->where('active', true)->firstOrFail();
+        $this->assertLessThanOrEqual(42, $active->sessions()->count());
     }
 
     // ---- Push subscribe: the server later POSTs to this URL (SSRF) ----
