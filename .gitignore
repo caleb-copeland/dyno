@@ -25,3 +25,10 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Local-only compose overrides
+compose.override.yaml
+
+# Local mkcert certs (private key) — do not commit
+docker/certs/
+docker/Caddyfile
