@@ -3,10 +3,7 @@
 namespace App\Enums;
 
 /**
- * The strength focus areas. `push` (antagonist) is included deliberately:
- * the other five are all pull-dominant, and climbers who only train pulling
- * develop shoulder problems — so antagonist work is a first-class area, not
- * folded invisibly into other sessions.
+ * The strength focus areas. All four are pull/climbing-dominant.
  *
  * Each area owns one semantic accent colour, used consistently everywhere the
  * area appears (§9) — a wayfinding system, not decoration.
@@ -14,21 +11,17 @@ namespace App\Enums;
 enum FocusArea: string
 {
     case Grip = 'grip';
+    case Pullups = 'pullups';
     case Core = 'core';
-    case Back = 'back';
-    case Arms = 'arms';
     case Legs = 'legs';
-    case Push = 'push';
 
     public function label(): string
     {
         return match ($this) {
             self::Grip => 'Grip',
+            self::Pullups => 'Pull-ups',
             self::Core => 'Core',
-            self::Back => 'Back',
-            self::Arms => 'Arms',
             self::Legs => 'Legs',
-            self::Push => 'Push / Antagonist',
         };
     }
 
@@ -36,12 +29,10 @@ enum FocusArea: string
     public function accentHex(): string
     {
         return match ($this) {
-            self::Grip => '#F5A524', // amber
-            self::Core => '#3B82F6', // blue
-            self::Back => '#22C55E', // green
-            self::Arms => '#A855F7', // purple
-            self::Legs => '#14B8A6', // teal
-            self::Push => '#EF4444', // red
+            self::Grip => '#F5A524',    // amber
+            self::Pullups => '#22C55E', // green
+            self::Core => '#3B82F6',    // blue
+            self::Legs => '#14B8A6',    // teal
         };
     }
 
@@ -50,11 +41,9 @@ enum FocusArea: string
     {
         return match ($this) {
             self::Grip => 'warning',
+            self::Pullups => 'success',
             self::Core => 'info',
-            self::Back => 'success',
-            self::Arms => 'purple',
             self::Legs => 'teal',
-            self::Push => 'danger',
         };
     }
 

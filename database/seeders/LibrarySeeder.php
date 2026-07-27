@@ -29,15 +29,13 @@ class LibrarySeeder extends Seeder
             [$ex['repeaters'], ['sets' => 3, 'interval_work_s' => 7, 'interval_rest_s' => 3, 'interval_reps' => 6, 'rest_s' => 180]],
         ]);
 
-        $this->workout('Pulling Power', FocusArea::Back, 'intermediate', 40, [
+        $this->workout('Pulling Power', FocusArea::Pullups, 'intermediate', 40, [
             [$ex['weighted_pullup'], ['sets' => 5, 'target_reps' => 5, 'prescription_basis' => PrescriptionBasis::PercentOfTest, 'percent_of_test' => 0.80, 'rest_s' => 180]],
             [$ex['pullups'], ['sets' => 3, 'target_reps' => 8, 'rest_s' => 120]],
             [$ex['bicep_curl'], ['sets' => 3, 'target_reps' => 12, 'rest_s' => 90]],
         ]);
 
-        $this->workout('Antagonist & Core', FocusArea::Push, 'beginner', 25, [
-            [$ex['pushups'], ['sets' => 3, 'target_reps' => 15, 'rest_s' => 60]],
-            [$ex['shoulder_press'], ['sets' => 3, 'target_reps' => 10, 'rest_s' => 90]],
+        $this->workout('Core Tension', FocusArea::Core, 'beginner', 25, [
             [$ex['front_lever'], ['sets' => 4, 'target_duration_s' => 10, 'prescription_basis' => PrescriptionBasis::Rpe, 'rest_s' => 120]],
             [$ex['leg_raise'], ['sets' => 3, 'target_reps' => 12, 'rest_s' => 60]],
         ]);
@@ -49,13 +47,11 @@ class LibrarySeeder extends Seeder
         return [
             'max_hang' => ['name' => 'Max Hang — 20mm edge', 'focus_area' => FocusArea::Grip, 'prescription_type' => PrescriptionType::Interval, 'is_finger_intensive' => true, 'instructions' => 'Half-crimp or open hand on a 20mm edge, added weight. Warm up thoroughly first.'],
             'repeaters' => ['name' => 'Repeaters — 7:3', 'focus_area' => FocusArea::Grip, 'prescription_type' => PrescriptionType::Interval, 'is_finger_intensive' => true, 'instructions' => '7s hang, 3s rest, ×6 per set. Sub-maximal load.'],
-            'weighted_pullup' => ['name' => 'Weighted Pull-up', 'focus_area' => FocusArea::Back, 'prescription_type' => PrescriptionType::Weight, 'is_finger_intensive' => false, 'instructions' => 'Full range, controlled. Jug or bar.'],
-            'pullups' => ['name' => 'Pull-ups', 'focus_area' => FocusArea::Back, 'prescription_type' => PrescriptionType::Reps, 'is_finger_intensive' => false],
-            'bicep_curl' => ['name' => 'Bicep Curl', 'focus_area' => FocusArea::Arms, 'prescription_type' => PrescriptionType::Weight, 'is_finger_intensive' => false],
+            'weighted_pullup' => ['name' => 'Weighted Pull-up', 'focus_area' => FocusArea::Pullups, 'prescription_type' => PrescriptionType::Weight, 'is_finger_intensive' => false, 'instructions' => 'Full range, controlled. Jug or bar.'],
+            'pullups' => ['name' => 'Pull-ups', 'focus_area' => FocusArea::Pullups, 'prescription_type' => PrescriptionType::Reps, 'is_finger_intensive' => false],
+            'bicep_curl' => ['name' => 'Bicep Curl', 'focus_area' => FocusArea::Pullups, 'prescription_type' => PrescriptionType::Weight, 'is_finger_intensive' => false],
             'front_lever' => ['name' => 'Front Lever Progression', 'focus_area' => FocusArea::Core, 'prescription_type' => PrescriptionType::Time, 'is_finger_intensive' => false, 'instructions' => 'Tuck → advanced tuck → one-leg → full, per your level.'],
             'leg_raise' => ['name' => 'Hanging Leg Raise', 'focus_area' => FocusArea::Core, 'prescription_type' => PrescriptionType::Reps, 'is_finger_intensive' => false],
-            'pushups' => ['name' => 'Push-ups', 'focus_area' => FocusArea::Push, 'prescription_type' => PrescriptionType::Reps, 'is_finger_intensive' => false],
-            'shoulder_press' => ['name' => 'Shoulder Press', 'focus_area' => FocusArea::Push, 'prescription_type' => PrescriptionType::Weight, 'is_finger_intensive' => false],
             'squat' => ['name' => 'Goblet Squat', 'focus_area' => FocusArea::Legs, 'prescription_type' => PrescriptionType::Weight, 'is_finger_intensive' => false],
         ];
     }

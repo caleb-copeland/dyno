@@ -34,7 +34,7 @@ class ScheduleGeneratorTest extends TestCase
         $results = $this->gen->generate(
             trainingDays: [0, 1, 2, 3, 4],
             climbingDays: [5],
-            frequencies: ['grip' => 2, 'back' => 2, 'core' => 1, 'legs' => 1],
+            frequencies: ['grip' => 2, 'pullups' => 2, 'core' => 1, 'legs' => 1],
         );
 
         $this->assertNotEmpty($results);
@@ -58,7 +58,7 @@ class ScheduleGeneratorTest extends TestCase
 
     public function test_results_are_sorted_best_first(): void
     {
-        $results = $this->gen->generate([0, 1, 2, 3, 4, 5, 6], [], ['grip' => 1, 'back' => 1, 'legs' => 1, 'core' => 1]);
+        $results = $this->gen->generate([0, 1, 2, 3, 4, 5, 6], [], ['grip' => 1, 'pullups' => 1, 'legs' => 1, 'core' => 1]);
 
         $scores = array_column($results, 'score');
         $sorted = $scores;
@@ -82,7 +82,7 @@ class ScheduleGeneratorTest extends TestCase
     {
         $placements = [
             ['focus' => 'grip', 'day' => 0],
-            ['focus' => 'back', 'day' => 0],
+            ['focus' => 'pullups', 'day' => 0],
         ];
 
         $issues = $this->gen->issues($placements, []);
@@ -103,7 +103,7 @@ class ScheduleGeneratorTest extends TestCase
     {
         // grip+legs same day (good) should beat grip+back same day (soft clash).
         $good = $this->gen->issues([['focus' => 'grip', 'day' => 0], ['focus' => 'legs', 'day' => 0]], []);
-        $bad = $this->gen->issues([['focus' => 'grip', 'day' => 0], ['focus' => 'back', 'day' => 0]], []);
+        $bad = $this->gen->issues([['focus' => 'grip', 'day' => 0], ['focus' => 'pullups', 'day' => 0]], []);
 
         $this->assertEmpty($good['soft']);
         $this->assertNotEmpty($bad['soft']);

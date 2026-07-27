@@ -36,9 +36,9 @@ class BaselineTests
                     '1 × 5s primer at ~80% of expected added weight, then rest 3 min.',
                 ],
             ],
-            'back_weighted_pullup' => [
-                'key' => 'back_weighted_pullup',
-                'focus' => FocusArea::Back->value,
+            'pullups_weighted_pullup' => [
+                'key' => 'pullups_weighted_pullup',
+                'focus' => FocusArea::Pullups->value,
                 'label' => 'Weighted Pull-up — 1RM',
                 'unit' => 'kg',
                 'min_sessions' => 4,

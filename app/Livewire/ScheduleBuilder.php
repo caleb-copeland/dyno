@@ -42,7 +42,7 @@ class ScheduleBuilder extends Component
         }
         // Sensible starting point.
         $this->frequencies = array_merge($this->frequencies, [
-            'grip' => 2, 'back' => 2, 'core' => 1, 'legs' => 1, 'push' => 1,
+            'grip' => 2, 'pullups' => 2, 'core' => 1, 'legs' => 1,
         ]);
 
         // Load the user's active schedule into the editor if one exists.

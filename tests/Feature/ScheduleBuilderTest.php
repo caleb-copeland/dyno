@@ -31,7 +31,7 @@ class ScheduleBuilderTest extends TestCase
 
         // 6 sessions requested → 6 placed, and marked generated.
         $component = Livewire::actingAs($user)->test(ScheduleBuilder::class)
-            ->set('frequencies', ['grip' => 2, 'back' => 2, 'core' => 1, 'legs' => 1])
+            ->set('frequencies', ['grip' => 2, 'pullups' => 2, 'core' => 1, 'legs' => 1])
             ->set('trainingDays', [0, 1, 2, 3, 4])
             ->set('climbingDays', [5])
             ->call('generate')
@@ -50,7 +50,7 @@ class ScheduleBuilderTest extends TestCase
 
         Livewire::actingAs($user)
             ->test(ScheduleBuilder::class)
-            ->set('frequencies', ['grip' => 1, 'back' => 1, 'legs' => 1])
+            ->set('frequencies', ['grip' => 1, 'pullups' => 1, 'legs' => 1])
             ->set('trainingDays', [0, 2, 4])
             ->set('climbingDays', [])
             ->call('generate')

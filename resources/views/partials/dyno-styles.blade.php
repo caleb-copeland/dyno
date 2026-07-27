@@ -10,16 +10,14 @@
         --line: #26262A;
         /* focus-area accents — must match App\Enums\FocusArea::accentHex() */
         --grip: #F5A524;
+        --pullups: #22C55E;
         --core: #3B82F6;
-        --back: #22C55E;
-        --arms: #A855F7;
         --legs: #14B8A6;
-        --push: #EF4444;
         /* app accent — outlines, focus, active states, primary CTA */
         --accent: var(--legs);
         /* semantic status aliases — one source for feedback colors */
-        --danger: var(--push);
-        --success: var(--back);
+        --danger: #EF4444;
+        --success: var(--pullups);
         --warn: var(--grip);
         --danger-soft: #FCA5A5;
         --success-soft: #86EFAC;
@@ -85,7 +83,7 @@
         border: 2px solid var(--line); background: transparent; cursor: pointer;
         display: grid; place-items: center;
     }
-    .set-check[aria-pressed="true"] { background: var(--back); border-color: var(--back); }
+    .set-check[aria-pressed="true"] { background: var(--success); border-color: var(--success); }
     .set-row.done .set-label { color: var(--text-muted); text-decoration: line-through; }
 
     /* circular progress arc */

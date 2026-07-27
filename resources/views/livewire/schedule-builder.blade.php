@@ -32,7 +32,7 @@
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
                 @foreach ($dayLabels as $day => $short)
                     <button type="button" wire:click="toggleClimbingDay({{ $day }})"
-                            class="btn btn--ghost" style="min-width:46px;min-height:44px;padding:8px;{{ in_array($day, $climbingDays, true) ? 'background:var(--push);color:#fff' : '' }}">{{ $short }}</button>
+                            class="btn btn--ghost" style="min-width:46px;min-height:44px;padding:8px;{{ in_array($day, $climbingDays, true) ? 'background:var(--accent);color:#fff' : '' }}">{{ $short }}</button>
                 @endforeach
             </div>
 

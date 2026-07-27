@@ -21,12 +21,12 @@ class ScheduleGenerator
     /** Focus areas that load fingers maximally (climbing days are always finger days). */
     public const FINGER_FOCI = ['grip'];
 
-    public const HEAVY_PULL = ['back'];
+    public const HEAVY_PULL = ['pullups'];
 
-    public const HIGH_INTENSITY = ['grip', 'back'];
+    public const HIGH_INTENSITY = ['grip', 'pullups'];
 
     /** Same-day pairings that interfere little and are preferred. */
-    public const GOOD_PAIRS = [['grip', 'legs'], ['back', 'core']];
+    public const GOOD_PAIRS = [['grip', 'legs'], ['pullups', 'core']];
 
     public const MAX_FINGER_SESSIONS = 3;
 
