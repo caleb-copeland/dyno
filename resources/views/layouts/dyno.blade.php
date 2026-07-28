@@ -11,6 +11,7 @@
 </head>
 <body>
     <main class="dyno-wrap">
+        @include('partials.dyno-header')
         @yield('content')
     </main>
 

@@ -11,6 +11,7 @@
 </head>
 <body>
     <main class="dyno-wrap">
+        @include('partials.dyno-header')
         {{ $slot }}
     </main>
     @include('partials.dyno-tabs')

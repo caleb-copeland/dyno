@@ -38,6 +38,10 @@
     }
 
     .dyno-wrap { max-width: 640px; margin: 0 auto; padding: 20px 16px 120px; }
+    /* brand bar */
+    .dyno-header { display: flex; align-items: center; padding: 2px 0 18px; }
+    .dyno-brand { display: inline-flex; text-decoration: none; color: var(--ink); }
+    .dyno-wordmark { height: 22px; width: auto; display: block; color: var(--ink); }
 
     .card {
         background: var(--surface);

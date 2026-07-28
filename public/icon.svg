@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <style>.c{fill:#26262A}@media (prefers-color-scheme:dark){.c{fill:#EDEDEF}}</style>
+  <g transform="rotate(-90 64 64)" fill="none" stroke-width="10" stroke-linecap="round">
+    <circle cx="64" cy="64" r="38" stroke="#F5A524" stroke-dasharray="36 202.761" stroke-dashoffset="0"/>
+    <circle cx="64" cy="64" r="38" stroke="#22C55E" stroke-dasharray="36 202.761" stroke-dashoffset="-59.69"/>
+    <circle cx="64" cy="64" r="38" stroke="#14B8A6" stroke-dasharray="36 202.761" stroke-dashoffset="-119.38"/>
+    <circle cx="64" cy="64" r="38" stroke="#3B82F6" stroke-dasharray="36 202.761" stroke-dashoffset="-179.07"/>
+  </g>
+  <circle class="c" cx="64" cy="64" r="8"/>
+</svg>

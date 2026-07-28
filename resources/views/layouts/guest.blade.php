@@ -8,6 +8,7 @@
 
         <title>{{ config('app.name', 'Dyno') }}</title>
 
+        @include('partials.favicons')
         @include('partials.dyno-styles')
 
         <!-- Scripts -->
@@ -16,9 +17,8 @@
     <body class="antialiased">
         <div class="min-h-screen flex flex-col justify-center items-center px-4 py-10"
              style="padding-bottom: calc(40px + env(safe-area-inset-bottom));">
-            <a href="/" class="flex items-center gap-3 mb-8 no-underline">
-                <x-application-logo class="w-11 h-11 fill-current text-ink" />
-                <span class="text-ink text-2xl font-extrabold tracking-[-0.03em]">{{ config('app.name', 'Dyno') }}</span>
+            <a href="/" class="mb-8 no-underline text-ink" aria-label="Dyno">
+                <x-app-wordmark class="w-auto" style="height:40px;display:block;" />
             </a>
 
             <div class="w-full sm:max-w-md">
