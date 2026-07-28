@@ -1,14 +1,13 @@
 <div class="dyno-wrap">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 16px;">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:6px 0 16px;">
         <h1 style="font-size:30px;font-weight:800;letter-spacing:-.02em;">Schedule</h1>
-        <button type="button" class="btn btn--primary" style="min-height:44px;padding:10px 20px;" wire:click="save" wire:loading.attr="disabled">Save</button>
+        <div class="muted" style="font-size:13px;white-space:nowrap;">
+            <span wire:loading style="color:var(--text-muted);">Saving…</span>
+            <span wire:loading.remove style="color:{{ $saved ? 'var(--success-soft)' : 'var(--text-muted)' }};">{{ $saved ? '✓ Saved' : 'Auto-saves' }}</span>
+        </div>
     </div>
 
-    <p class="muted" style="font-size:14px;margin-bottom:14px;">Add workouts to any day. Repeat across days as you like.</p>
-
-    @if ($saved)
-        <div class="card" style="background:rgba(34,197,94,.12);color:var(--success-soft);text-align:center;margin-bottom:12px;">✓ Schedule saved — see it on <a href="{{ route('dashboard') }}" style="color:var(--success-soft);text-decoration:underline;">Today</a>.</div>
-    @endif
+    <p class="muted" style="font-size:14px;margin-bottom:14px;">Add workouts to any day — changes save automatically.</p>
 
     <div style="display:flex;flex-direction:column;gap:10px;">
         @foreach ($week as $dayNum => $day)

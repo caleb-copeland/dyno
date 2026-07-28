@@ -37,7 +37,7 @@
         -webkit-font-smoothing: antialiased;
     }
 
-    .dyno-wrap { max-width: 640px; margin: 0 auto; padding: 20px 16px 96px; }
+    .dyno-wrap { max-width: 640px; margin: 0 auto; padding: 20px 16px 120px; }
 
     .card {
         background: var(--surface);
@@ -95,12 +95,15 @@
 
     .pill { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
 
-    /* bottom tab bar — single source (was duplicated across layouts) */
+    /* bottom tab bar — single source (was duplicated across layouts). Floats
+       above the bottom edge, aligned to the content column. */
     .tabbar {
-        position: fixed; left: 0; right: 0; bottom: 0;
+        position: fixed; left: 0; right: 0; bottom: calc(16px + env(safe-area-inset-bottom));
+        margin: 0 auto; max-width: 608px; width: calc(100% - 32px);
         display: flex; justify-content: space-around;
         background: rgba(20,20,22,.92); backdrop-filter: blur(12px);
-        border-top: 1px solid var(--line); padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
+        border: 1px solid var(--line); border-radius: 20px; padding: 10px 8px;
+        box-shadow: 0 8px 30px rgba(0,0,0,.45);
     }
     .tab { flex: 1; text-align: center; text-decoration: none; color: var(--text-muted);
            font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em;

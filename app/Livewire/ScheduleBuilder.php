@@ -58,7 +58,7 @@ class ScheduleBuilder extends Component
         }
 
         $this->days[$day][] = $id;
-        $this->saved = false;
+        $this->persist();
     }
 
     public function removeWorkout(int $day, int $index): void
@@ -68,16 +68,25 @@ class ScheduleBuilder extends Component
         }
         unset($this->days[$day][$index]);
         $this->days[$day] = array_values($this->days[$day]);
-        $this->saved = false;
+        $this->persist();
     }
 
+    /** Alias kept for explicit "save" triggers; the editor auto-persists. */
     public function save(): void
     {
-        // `days` is client-supplied. Walk only the real weekday buckets, resolve
-        // every id against the published-workout set (so an unpublished/foreign
-        // id can't be persisted), and cap the total. Bail if nothing survives —
-        // a tampered request must not create an empty active schedule or
-        // deactivate the existing one.
+        $this->persist();
+    }
+
+    /**
+     * Write the current week to the user's single active schedule. `days` is
+     * client-supplied, so walk only real weekday buckets, resolve every id
+     * against the published-workout set (an unpublished/foreign id can't be
+     * persisted), and cap the total. The active schedule is reused in place so
+     * rapid auto-saves don't pile up rows; a tampered request that resolves to
+     * nothing when no schedule exists yet is a no-op.
+     */
+    private function persist(): void
+    {
         $workouts = Workout::where('is_published', true)->get()->keyBy('id');
 
         $rows = [];
@@ -103,14 +112,27 @@ class ScheduleBuilder extends Component
             }
         }
 
-        if (empty($rows)) {
+        $existing = Schedule::where('user_id', Auth::id())->where('active', true)->latest()->first();
+
+        // Nothing to store and no schedule to update — don't materialise an
+        // empty one (covers tampered input as well as a first-time no-op).
+        if ($existing === null && $rows === []) {
             return;
         }
 
-        DB::transaction(function () use ($rows) {
-            Schedule::where('user_id', Auth::id())->update(['active' => false]);
-            $schedule = Schedule::create(['user_id' => Auth::id(), 'active' => true]);
-            $schedule->sessions()->createMany($rows);
+        DB::transaction(function () use ($rows, $existing) {
+            $schedule = $existing ?? Schedule::create(['user_id' => Auth::id(), 'active' => true]);
+
+            // Collapse any stray extra active schedules onto this one.
+            Schedule::where('user_id', Auth::id())
+                ->where('active', true)
+                ->where('id', '!=', $schedule->id)
+                ->update(['active' => false]);
+
+            $schedule->sessions()->delete();
+            if ($rows !== []) {
+                $schedule->sessions()->createMany($rows);
+            }
         });
 
         $this->saved = true;

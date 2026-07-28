@@ -50,20 +50,22 @@ class ScheduleBuilderTest extends TestCase
         $this->assertSame($w1->focus_area->value, $monday->first()->focus_area->value);
     }
 
-    public function test_saving_deactivates_prior_active_schedule(): void
+    public function test_editing_reuses_the_single_active_schedule(): void
     {
         $this->seed(LibrarySeeder::class);
         $user = User::factory()->create();
-        $old = Schedule::create(['user_id' => $user->id, 'active' => true]);
+        $existing = Schedule::create(['user_id' => $user->id, 'active' => true]);
         $workout = Workout::where('is_published', true)->first();
 
         Livewire::actingAs($user)->test(ScheduleBuilder::class)
             ->call('addWorkout', 3, $workout->id)
-            ->call('save')
             ->assertSet('saved', true);
 
-        $this->assertFalse($old->fresh()->active);
-        $this->assertSame(1, Schedule::where('user_id', $user->id)->where('active', true)->count());
+        // The active schedule is updated in place, not duplicated.
+        $this->assertSame(1, Schedule::where('user_id', $user->id)->count());
+        $active = Schedule::where('user_id', $user->id)->where('active', true)->firstOrFail();
+        $this->assertSame($existing->id, $active->id);
+        $this->assertSame(1, $active->sessions()->count());
     }
 
     public function test_workout_can_be_removed_before_saving(): void
