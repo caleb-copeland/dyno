@@ -11,7 +11,7 @@
     @if ($schedule)
         @if ($isClimbingToday)
             <div class="card" style="border:1px solid rgba(239,68,68,.35);text-align:center;">
-                <div class="metric" style="font-size:40px;">🧗</div>
+                <x-ico name="mountain" :size="40" style="color:var(--danger-soft);" />
                 <div class="label" style="margin-top:8px;">Climbing day</div>
                 <div class="muted" style="margin-top:6px;font-size:14px;">Maximal finger load — no hangboard today.</div>
             </div>
@@ -37,7 +37,7 @@
         @empty
             @unless ($isClimbingToday)
                 <div class="card" style="text-align:center;">
-                    <div class="metric" style="font-size:40px;">🌙</div>
+                    <x-ico name="moon" :size="40" class="muted" />
                     <div class="label" style="margin-top:8px;">Rest day</div>
                     <div class="muted" style="margin-top:6px;font-size:14px;">Nothing scheduled — recover.</div>
                 </div>

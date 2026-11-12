@@ -3,8 +3,15 @@
 <style>
     :root {
         --bg: #0A0A0B;
+        /* WHOOP-style ambient gradient — kept dark so glass cards retain contrast */
+        --bg-grad: linear-gradient(180deg, #14171F 0%, #0C0D11 52%, #0A0A0B 100%);
         --surface: #141416;
         --surface-raised: #1E1E21;
+        /* glass fill + hairline for translucent cards over the gradient */
+        --glass: rgba(28, 28, 32, 0.55);
+        --glass-raised: rgba(40, 40, 46, 0.6);
+        --glass-line: rgba(255, 255, 255, 0.06);
+        --glass-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 45%);
         --text: #F2F2F3;
         --text-muted: #8A8A90;
         --line: #26262A;
@@ -29,9 +36,13 @@
     /* accent focus outline everywhere — replaces the UA blue, one source */
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+    /* solid base behind the fixed gradient — prevents flash on overscroll */
+    html { background: var(--bg); }
     html, body {
         margin: 0;
-        background: var(--bg);
+        min-height: 100vh;
+        /* fixed so it stays put as content scrolls, WHOOP-style */
+        background: var(--bg-grad) no-repeat fixed;
         color: var(--text);
         font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         -webkit-font-smoothing: antialiased;
@@ -44,12 +55,23 @@
     .dyno-wordmark { height: 22px; width: auto; display: block; color: var(--ink); }
 
     .card {
-        background: var(--surface);
+        /* layered: top sheen over translucent fill; sheen paints above the
+           blurred backdrop but always behind card content (no pseudo-element) */
+        background: var(--glass-sheen), var(--glass);
+        border: 1px solid var(--glass-line);
         border-radius: 20px;
         padding: 20px;
         margin-bottom: 14px;
+        backdrop-filter: blur(20px) saturate(1.3);
+        -webkit-backdrop-filter: blur(20px) saturate(1.3);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
     }
-    .card--raised { background: var(--surface-raised); }
+    .card--raised { background: var(--glass-sheen), var(--glass-raised); }
+    /* graceful fallback: opaque surfaces where backdrop-filter is unsupported */
+    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+        .card { background: var(--surface); }
+        .card--raised { background: var(--surface-raised); }
+    }
 
     .label {
         text-transform: uppercase;
@@ -101,7 +123,10 @@
 
     /* bottom tab bar — single source (was duplicated across layouts). Floats
        above the bottom edge, aligned to the content column. */
+    /* box model pinned so the bar renders identically whether or not a page
+       also loads Tailwind (Preflight flips box-sizing/line-height) — e.g. Profile. */
     .tabbar {
+        box-sizing: border-box; line-height: 1.3;
         position: fixed; left: 0; right: 0; bottom: calc(16px + env(safe-area-inset-bottom));
         margin: 0 auto; max-width: 608px; width: calc(100% - 32px);
         display: flex; justify-content: space-around;
@@ -109,11 +134,12 @@
         border: 1px solid var(--line); border-radius: 20px; padding: 10px 8px;
         box-shadow: 0 8px 30px rgba(0,0,0,.45);
     }
+    .tabbar *, .tabbar *::before, .tabbar *::after { box-sizing: border-box; }
     .tab { flex: 1; text-align: center; text-decoration: none; color: var(--text-muted);
            font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em;
-           padding: 6px; border-radius: 12px; }
+           line-height: 1.3; padding: 6px; border-radius: 12px; }
     .tab[aria-current="page"] { color: var(--text); }
-    .tab-ico { display: block; font-size: 20px; margin-bottom: 3px; }
+    .tab-ico { display: block; margin: 0 auto 3px; }
 
     @media (prefers-reduced-motion: reduce) {
         .btn, .arc__fill { transition: none; }

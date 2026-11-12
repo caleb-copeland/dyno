@@ -32,8 +32,8 @@
                     {{ $t['last'] ? 'Re-test' : 'Take test' }}
                 </a>
             @else
-                <div class="set-row" style="margin-top:12px;justify-content:center;">
-                    🔒 Log {{ $t['sessions_needed'] }} more session{{ $t['sessions_needed'] === 1 ? '' : 's' }} to unlock
+                <div class="set-row muted" style="margin-top:12px;justify-content:center;gap:8px;">
+                    <x-ico name="lock" :size="16" /> Log {{ $t['sessions_needed'] }} more session{{ $t['sessions_needed'] === 1 ? '' : 's' }} to unlock
                 </div>
             @endif
         </div>
