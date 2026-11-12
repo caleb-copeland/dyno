@@ -52,7 +52,7 @@
     /* brand bar */
     .dyno-header { display: flex; align-items: center; padding: 2px 0 18px; }
     .dyno-brand { display: inline-flex; text-decoration: none; color: var(--ink); }
-    .dyno-wordmark { height: 22px; width: auto; display: block; color: var(--ink); }
+    .dyno-wordmark { height: 30px; width: auto; display: block; color: var(--ink); }
 
     .card {
         /* layered: top sheen over translucent fill; sheen paints above the
@@ -128,7 +128,8 @@
     .tabbar {
         box-sizing: border-box; line-height: 1.3;
         position: fixed; left: 0; right: 0; bottom: calc(16px + env(safe-area-inset-bottom));
-        margin: 0 auto; max-width: 608px; width: calc(100% - 32px);
+        /* inset 12px per side from the content column so the bar reads as floating */
+        margin: 0 auto; max-width: 584px; width: calc(100% - 56px);
         display: flex; justify-content: space-around;
         background: rgba(20,20,22,.92); backdrop-filter: blur(12px);
         border: 1px solid var(--line); border-radius: 20px; padding: 10px 8px;

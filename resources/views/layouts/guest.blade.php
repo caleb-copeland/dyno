@@ -18,7 +18,7 @@
         <div class="min-h-screen flex flex-col justify-center items-center px-4 py-10"
              style="padding-bottom: calc(40px + env(safe-area-inset-bottom));">
             <a href="/" class="mb-8 no-underline text-ink" aria-label="Dyno">
-                <x-app-wordmark class="w-auto" style="height:40px;display:block;" />
+                <x-app-wordmark class="w-auto" style="height:52px;display:block;" />
             </a>
 
             <div class="w-full sm:max-w-md">
