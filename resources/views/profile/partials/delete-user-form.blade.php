@@ -14,7 +14,6 @@
     </x-danger-button>
 
     <dialog id="confirm-user-deletion"
-            @if($errors->userDeletion->isNotEmpty()) open @endif
             style="background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:20px;padding:0;width:min(92vw,480px);">
         <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
             @csrf
@@ -42,7 +41,7 @@
                 <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
             </div>
 
-            <div class="mt-6 flex justify-end gap-3">
+            <div class="mt-6 flex gap-3">
                 <x-secondary-button type="button" onclick="document.getElementById('confirm-user-deletion').close()">
                     {{ __('Cancel') }}
                 </x-secondary-button>
@@ -53,4 +52,8 @@
             </div>
         </form>
     </dialog>
+    @if ($errors->userDeletion->isNotEmpty())
+        {{-- reopen as a modal (not the bare open attribute) so it keeps the backdrop + scroll lock --}}
+        <script>document.getElementById('confirm-user-deletion').showModal();</script>
+    @endif
 </section>

@@ -13,6 +13,9 @@
         'mountain' => '<path d="M2.5 20 10 6.5l3.5 6.4L16 9l5.5 11Z"/><path d="m8 12 2 2 1.5-1.8"/>',
         'moon'     => '<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z"/>',
         'lock'     => '<rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>',
+        // ---- controls ----
+        'chevron-left' => '<path d="M14.5 5.5 8 12l6.5 6.5"/>',
+        'stop'     => '<rect x="7" y="7" width="10" height="10" rx="2"/>',
         default    => '',
     };
 @endphp

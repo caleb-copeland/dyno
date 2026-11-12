@@ -22,9 +22,11 @@
                 done: config.done || {},
                 total: config.total || 0,
                 workoutId: config.workoutId || null,
+                accent: config.accent || 'var(--accent)',
 
                 mode: 'idle',        // idle | rest | interval
                 remaining: 0,
+                duration: 0,         // length of the current countdown, for the ring
                 label: '',
                 phase: '',
                 rep: 0,
@@ -40,6 +42,9 @@
                 arcOffset(circ) {
                     const pct = this.total > 0 ? this.completedCount() / this.total : 0;
                     return circ * (1 - pct);
+                },
+                ringOffset(circ) {
+                    return this.duration > 0 ? circ * (1 - this.remaining / this.duration) : 0;
                 },
 
                 // ---- set toggle → optimistic UI + persist (online) / queue (offline) ----
@@ -124,7 +129,7 @@
                     this.mode = 'rest';
                     this.phase = 'rest';
                     this.label = 'Rest';
-                    this.remaining = seconds;
+                    this.remaining = this.duration = seconds;
                     this.beep(660, 0.12);
                     this._tick = setInterval(() => {
                         this.remaining--;
@@ -146,7 +151,7 @@
                     this._clearTick();
                     this.phase = phase;
                     this.label = phase === 'work' ? ('Hang ' + this.rep + ' / ' + reps) : 'Off';
-                    this.remaining = phase === 'work' ? work : rest;
+                    this.remaining = this.duration = phase === 'work' ? work : rest;
                     this.beep(phase === 'work' ? 880 : 440, 0.18);
                     this._tick = setInterval(() => {
                         this.remaining--;

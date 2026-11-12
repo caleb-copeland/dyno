@@ -36,6 +36,10 @@
     /* accent focus outline everywhere — replaces the UA blue, one source */
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+    /* no page scroll behind a popup: native <dialog> or the runner overlay (.is-locked) */
+    html.is-locked, html:has(dialog[open]) { overflow: hidden; overscroll-behavior: none; }
+    dialog::backdrop { background: rgba(0, 0, 0, .55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+
     /* solid base behind the fixed gradient — prevents flash on overscroll */
     html { background: var(--bg); }
     html, body {
@@ -85,6 +89,14 @@
 
     .accent-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
+    /* native chevron hugs the edge and can't be padded — draw our own */
+    .dyno-select {
+        appearance: none; -webkit-appearance: none; width: 100%; min-height: 44px;
+        background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%238A8A90' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center;
+        color: var(--text); border: 1px solid var(--line); border-radius: 12px;
+        padding: 10px 40px 10px 12px; font-size: 15px;
+    }
+
     .btn {
         appearance: none; border: 0; cursor: pointer;
         background: var(--surface-raised); color: var(--text);
@@ -117,7 +129,67 @@
     .arc__track { stroke: var(--line); }
     .arc__fill { stroke-linecap: round; transition: stroke-dashoffset .3s ease; }
 
-    .timer-big { font-variant-numeric: tabular-nums; font-size: 72px; font-weight: 800; letter-spacing: -0.04em; }
+
+    /* round glass icon button — runner back control */
+    .icon-btn {
+        width: 44px; height: 44px; border-radius: 50%; flex: none;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: var(--glass); border: 1px solid var(--glass-line);
+        color: var(--text); text-decoration: none;
+        transition: transform .06s ease, background .15s ease;
+    }
+    .icon-btn:active { transform: scale(.94); background: var(--glass-raised); }
+
+    /* full-screen countdown. --phase is the live colour: the workout's focus
+       accent while working, neutral during rest. */
+    .timer-overlay {
+        --phase: var(--text);
+        position: fixed; inset: 0; z-index: 50; overflow: hidden;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 28px; padding: 24px 24px calc(24px + env(safe-area-inset-bottom));
+        background: var(--bg); text-align: center;
+    }
+    .timer-overlay__glow {
+        position: absolute; inset: -20%; pointer-events: none;
+        background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--phase) 28%, transparent) 0%, transparent 55%);
+        transition: background .4s ease;
+    }
+    .timer-overlay > :not(.timer-overlay__glow) { position: relative; }
+    .timer-pill {
+        font-size: 13px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+        padding: 8px 16px; border-radius: 999px; color: var(--phase);
+        background: color-mix(in srgb, var(--phase) 14%, transparent);
+        border: 1px solid color-mix(in srgb, var(--phase) 35%, transparent);
+    }
+    .timer-ring { position: relative; width: min(78vw, 46vh, 360px); aspect-ratio: 1; }
+    .timer-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+    .timer-ring__track { fill: none; stroke: rgba(255,255,255,.07); stroke-width: 10; }
+    .timer-ring__fill {
+        fill: none; stroke: var(--phase); stroke-width: 10; stroke-linecap: round;
+        filter: drop-shadow(0 0 10px color-mix(in srgb, var(--phase) 70%, transparent));
+        transition: stroke-dashoffset 1s linear, stroke .4s ease;
+    }
+    .timer-ring__center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .timer-ring__num {
+        font-variant-numeric: tabular-nums; font-weight: 800; letter-spacing: -0.05em; line-height: 1;
+        font-size: min(30vw, 18vh, 140px); color: var(--text);
+    }
+    .timer-ring__unit { margin-top: 6px; font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--text-muted); }
+    .timer-ring.is-final .timer-ring__num { color: var(--phase); animation: timer-pulse 1s ease-out infinite; }
+    @keyframes timer-pulse { 0% { transform: scale(1.12); } 60%, 100% { transform: scale(1); } }
+    .timer-meta { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .timer-reps { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 280px; }
+    .timer-rep { width: 18px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.12); transition: background .3s ease; }
+    .timer-rep.is-done { background: color-mix(in srgb, var(--phase) 55%, transparent); }
+    .timer-rep.is-current { background: var(--phase); box-shadow: 0 0 8px var(--phase); }
+    .timer-ex { font-size: 15px; font-weight: 600; color: var(--text-muted); }
+    .timer-stop {
+        appearance: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+        min-height: 52px; padding: 12px 26px; border-radius: 999px;
+        font-size: 15px; font-weight: 700; color: var(--text);
+        background: var(--glass); border: 1px solid var(--glass-line); backdrop-filter: blur(12px);
+    }
+    .timer-stop:active { transform: scale(.97); }
 
     .pill { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
 
@@ -143,6 +215,7 @@
     .tab-ico { display: block; margin: 0 auto 3px; }
 
     @media (prefers-reduced-motion: reduce) {
-        .btn, .arc__fill { transition: none; }
+        .btn, .arc__fill, .icon-btn, .timer-ring__fill, .timer-overlay__glow { transition: none; }
+        .timer-ring.is-final .timer-ring__num { animation: none; }
     }
 </style>

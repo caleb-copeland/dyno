@@ -4,8 +4,9 @@
     $pct = $total > 0 ? $doneCount / $total : 0;
     $circ = 2 * M_PI * 52;
 @endphp
-<div x-data="runner({ done: @js((object) $done), total: {{ $total }}, workoutId: {{ $workout->id }} })"
+<div x-data="runner({ done: @js((object) $done), total: {{ $total }}, workoutId: {{ $workout->id }}, accent: @js($workout->focus_area->accentHex()) })"
      x-init="acquireWake(); flushQueue()"
+     x-effect="document.documentElement.classList.toggle('is-locked', mode !== 'idle')"
      x-on:session-finished.window="releaseWake()"
      x-on:online.window="flushQueue()"
      class="dyno-wrap">
@@ -23,7 +24,9 @@
     @else
         {{-- ---------- Header ---------- --}}
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <a href="{{ route('dashboard') }}" class="btn btn--ghost" style="min-height:44px;padding:10px 16px;" x-on:click="cancel()">✕</a>
+            <a href="{{ route('dashboard') }}" class="icon-btn" aria-label="Leave session" x-on:click="cancel()">
+                <x-ico name="chevron-left" :size="22" />
+            </a>
             <div class="label">Session</div>
             <div style="width:44px;"></div>
         </div>
@@ -116,14 +119,36 @@
         </div>
 
         {{-- ---------- Timer overlay ---------- --}}
-        <div x-show="mode !== 'idle'" x-cloak
-             style="position:fixed;inset:0;background:rgba(10,10,11,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:50;padding:24px;text-align:center;">
-            <div class="label" x-text="label"></div>
-            <div class="timer-big" x-text="remaining" style="margin:14px 0;"
-                 :style="phase === 'work' ? 'color:var(--grip)' : ''"></div>
-            <div class="muted" x-show="mode === 'interval'" x-text="'Rep ' + rep + ' / ' + totalReps"></div>
-            <div class="muted" x-show="mode === 'interval'" x-text="exName" style="margin-top:4px;"></div>
-            <button type="button" class="btn btn--ghost" style="margin-top:32px;" x-on:click="cancel()">Stop</button>
+        <div x-show="mode !== 'idle'" x-cloak x-transition.opacity.duration.200ms
+             class="timer-overlay" x-bind:style="'--phase:' + (phase === 'work' ? accent : 'var(--text)')">
+            <div class="timer-overlay__glow" aria-hidden="true"></div>
+
+            <div class="timer-pill" x-text="label"></div>
+
+            <div class="timer-ring" x-bind:class="{ 'is-final': remaining > 0 && remaining <= 3 }">
+                <svg viewBox="0 0 220 220" aria-hidden="true">
+                    <circle class="timer-ring__track" cx="110" cy="110" r="100"/>
+                    <circle class="timer-ring__fill" cx="110" cy="110" r="100"
+                            stroke-dasharray="628.32" x-bind:stroke-dashoffset="ringOffset(628.32)"/>
+                </svg>
+                <div class="timer-ring__center">
+                    <div class="timer-ring__num" x-text="remaining"></div>
+                    <div class="timer-ring__unit">sec</div>
+                </div>
+            </div>
+
+            <div class="timer-meta" x-show="mode === 'interval'">
+                <div class="timer-reps">
+                    <template x-for="i in totalReps" x-bind:key="i">
+                        <span class="timer-rep" x-bind:class="{ 'is-done': i < rep, 'is-current': i === rep }"></span>
+                    </template>
+                </div>
+                <div class="timer-ex" x-text="exName"></div>
+            </div>
+
+            <button type="button" class="timer-stop" x-on:click="cancel()">
+                <x-ico name="stop" :size="18" />Stop
+            </button>
         </div>
     @endif
 </div>

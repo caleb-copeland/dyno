@@ -1,4 +1,4 @@
-<div class="dyno-wrap">
+<div>
     @if ($finished)
         <div class="card" style="text-align:center;">
             <div class="metric" style="font-size:56px;">{{ rtrim(rtrim(number_format($value, 2), '0'), '.') }}<span class="muted" style="font-size:24px;"> {{ $def['unit'] }}</span></div>

@@ -1,6 +1,6 @@
-<div class="dyno-wrap">
-    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:6px 0 16px;">
-        <h1 style="font-size:30px;font-weight:800;letter-spacing:-.02em;">Schedule</h1>
+<div>
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:6px 0 18px;">
+        <h1 style="font-size:30px;font-weight:800;letter-spacing:-.02em;margin:0;">Schedule</h1>
         <div class="muted" style="font-size:13px;white-space:nowrap;">
             <span wire:loading style="color:var(--text-muted);">Saving…</span>
             <span wire:loading.remove style="color:{{ $saved ? 'var(--success-soft)' : 'var(--text-muted)' }};">{{ $saved ? '✓ Saved' : 'Auto-saves' }}</span>
@@ -30,7 +30,7 @@
 
                 <select aria-label="Add workout to {{ $day['label'] }}"
                         x-on:change="$wire.addWorkout({{ $dayNum }}, $event.target.value); $event.target.value = ''"
-                        style="margin-top:12px;width:100%;min-height:44px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:15px;">
+                        class="dyno-select" style="margin-top:12px;">
                     <option value="">+ Add workout…</option>
                     @foreach ($options as $focusLabel => $group)
                         <optgroup label="{{ $focusLabel }}">
