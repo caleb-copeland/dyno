@@ -87,4 +87,13 @@ class PasswordResetTest extends TestCase
             return true;
         });
     }
+
+    public function test_login_shows_reset_confirmation_toast(): void
+    {
+        $this->withSession(['status' => 'Your password has been reset.'])
+            ->get('/login')
+            ->assertOk()
+            ->assertSee('class="toast"', false)
+            ->assertSee('Your password has been reset.');
+    }
 }

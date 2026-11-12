@@ -16,6 +16,7 @@
         // ---- controls ----
         'chevron-left' => '<path d="M14.5 5.5 8 12l6.5 6.5"/>',
         'stop'     => '<rect x="7" y="7" width="10" height="10" rx="2"/>',
+        'check'    => '<path d="M5 12.5 9.5 17 19 7.5"/>',
         default    => '',
     };
 @endphp

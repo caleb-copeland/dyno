@@ -37,8 +37,11 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-// Local-only email preview: renders the branded reset email in the browser.
+// Local-only previews: the branded reset email, and the post-reset toast (log out first).
 if (app()->isLocal()) {
     Route::get('/dev/mail/reset-password', fn () => (new \Illuminate\Auth\Notifications\ResetPassword('preview-token'))
         ->toMail(\App\Models\User::firstOrFail()));
+
+    // Toast preview: what a member sees after a successful password reset.
+    Route::get('/dev/toast', fn () => redirect()->route('login')->with('status', __('passwords.reset')));
 }

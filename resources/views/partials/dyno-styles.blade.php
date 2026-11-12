@@ -130,6 +130,25 @@
     .arc__fill { stroke-linecap: round; transition: stroke-dashoffset .3s ease; }
 
 
+    /* flash toast — slides down from the top, glass pill (see components/auth-session-status) */
+    .toast {
+        position: fixed; z-index: 60; left: 16px; right: 16px; top: calc(16px + env(safe-area-inset-top));
+        margin: 0 auto; width: fit-content; max-width: 480px;
+        display: flex; align-items: center; gap: 10px;
+        padding: 12px 18px 12px 12px; border-radius: 999px; cursor: pointer;
+        background: rgba(30, 30, 33, .92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-line); box-shadow: 0 8px 30px rgba(0, 0, 0, .45);
+        color: var(--text); font-size: 14px; font-weight: 600; line-height: 1.3;
+        opacity: 0; transform: translateY(-12px);
+        transition: opacity .25s ease, transform .25s ease;
+    }
+    .toast.is-shown { opacity: 1; transform: none; }
+    .toast__icon {
+        flex: none; width: 26px; height: 26px; border-radius: 50%;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: color-mix(in srgb, var(--success) 18%, transparent); color: var(--success);
+    }
+
     /* round glass icon button — runner back control */
     .icon-btn {
         width: 44px; height: 44px; border-radius: 50%; flex: none;
@@ -215,7 +234,7 @@
     .tab-ico { display: block; margin: 0 auto 3px; }
 
     @media (prefers-reduced-motion: reduce) {
-        .btn, .arc__fill, .icon-btn, .timer-ring__fill, .timer-overlay__glow { transition: none; }
+        .btn, .arc__fill, .icon-btn, .timer-ring__fill, .timer-overlay__glow, .toast { transition: none; }
         .timer-ring.is-final .timer-ring__num { animation: none; }
     }
 </style>
