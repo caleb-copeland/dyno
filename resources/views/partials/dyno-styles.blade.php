@@ -52,7 +52,7 @@
     /* brand bar */
     .dyno-header { display: flex; align-items: center; padding: 2px 0 18px; }
     .dyno-brand { display: inline-flex; text-decoration: none; color: var(--ink); }
-    .dyno-wordmark { height: 30px; width: auto; display: block; color: var(--ink); }
+    .dyno-wordmark { height: 60px; width: auto; display: block; color: var(--ink); }
 
     .card {
         /* layered: top sheen over translucent fill; sheen paints above the
