@@ -22,7 +22,7 @@
             @foreach ($def['warmup'] as $i => $step)
                 <div class="set-row" style="align-items:flex-start;">
                     <button type="button" class="set-check" aria-pressed="{{ ($warmupDone[$i] ?? false) ? 'true' : 'false' }}"
-                            wire:click="$toggle('warmupDone.{{ $i }}')" style="margin-top:2px;">
+                            wire:click="toggleWarmup({{ $i }})" style="margin-top:2px;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="{{ ($warmupDone[$i] ?? false) ? '' : 'display:none' }}">
                             <path d="M5 13l4 4L19 7" stroke="#0A0A0B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>

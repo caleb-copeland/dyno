@@ -20,7 +20,13 @@ class BaselineTest extends Component
     #[Locked]
     public array $def;
 
-    /** @var array<int,bool> which warmup steps are checked */
+    /**
+     * Which warmup steps are checked. Locked so the client can't reshape it
+     * (e.g. send [true] for a 3-step warmup) — steps flip via toggleWarmup().
+     *
+     * @var array<int,bool>
+     */
+    #[Locked]
     public array $warmupDone = [];
 
     public ?float $value = null;
@@ -40,6 +46,13 @@ class BaselineTest extends Component
         $this->warmupDone = array_fill(0, count($def['warmup']), false);
     }
 
+    public function toggleWarmup(int $step): void
+    {
+        if (array_key_exists($step, $this->warmupDone)) {
+            $this->warmupDone[$step] = ! $this->warmupDone[$step];
+        }
+    }
+
     public function getWarmupCompleteProperty(): bool
     {
         return count($this->warmupDone) > 0 && ! in_array(false, $this->warmupDone, true);
@@ -47,7 +60,7 @@ class BaselineTest extends Component
 
     public function record(): void
     {
-        abort_unless($this->warmupComplete, 422); // no unwarmed max test
+        abort_unless($this->warmupComplete, 422); // every warmup step checked first
 
         $this->validate([
             'value' => ['required', 'numeric', 'min:0', 'max:1000'],

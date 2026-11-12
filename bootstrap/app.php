@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\EnsureUserIsActive::class,
         ]);
 
+        // Global, so the Filament panel and /up get them too.
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
         // Behind reverse proxies (Sail nginx, and `tailscale serve` terminating
         // HTTPS then forwarding HTTP to localhost) so Laravel detects the real
         // https scheme — otherwise secure cookies / redirects break on login.

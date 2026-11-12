@@ -74,7 +74,7 @@ class BaselineTestTest extends TestCase
         $component = Livewire::actingAs($user)->test(BaselineTest::class, ['key' => 'grip_max_hang']);
         // Check every warmup step.
         foreach (array_keys($component->get('warmupDone')) as $i) {
-            $component->set("warmupDone.$i", true);
+            $component->call('toggleWarmup', $i);
         }
         $component->set('value', 42.5)->call('record')->assertSet('finished', true);
 
@@ -116,5 +116,28 @@ class BaselineTestTest extends TestCase
         Livewire::actingAs($user)
             ->test(WorkoutRunner::class, ['workout' => $workout])
             ->assertSee('45kg'); // 90% of 50kg
+    }
+
+    public function test_warmup_state_cannot_be_set_by_the_client(): void
+    {
+        $user = User::factory()->create();
+        $this->logCompletedSessions($user, 6);
+
+        $this->expectException(\Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException::class);
+
+        Livewire::actingAs($user)
+            ->test(BaselineTest::class, ['key' => 'grip_max_hang'])
+            ->set('warmupDone', [true]);
+    }
+
+    public function test_out_of_range_warmup_step_is_ignored(): void
+    {
+        $user = User::factory()->create();
+        $this->logCompletedSessions($user, 6);
+
+        $component = Livewire::actingAs($user)->test(BaselineTest::class, ['key' => 'grip_max_hang']);
+        $before = $component->get('warmupDone');
+
+        $component->call('toggleWarmup', 99)->assertSet('warmupDone', $before);
     }
 }
