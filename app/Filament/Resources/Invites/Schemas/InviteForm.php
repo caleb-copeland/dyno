@@ -18,7 +18,7 @@ class InviteForm
                     ->required()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true)
-                    ->helperText('The registration link will only work for this address.'),
+                    ->helperText("We'll email the link here. It only works for this address."),
 
                 DateTimePicker::make('expires_at')
                     ->label('Expires at')

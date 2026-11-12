@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Invites\Pages;
 
+use App\Actions\SendInvite;
 use App\Filament\Resources\Invites\InviteResource;
 use App\Models\Invite;
 use Filament\Notifications\Notification;
@@ -33,12 +34,14 @@ class CreateInvite extends CreateRecord
     protected function afterCreate(): void
     {
         $url = route('register', ['token' => $this->rawToken]);
+        $emailed = app(SendInvite::class)->handle($this->record, $this->rawToken);
 
+        // The link is still shown once either way — a fallback if the email gets lost.
         Notification::make()
-            ->title('Invite created')
-            ->body("Copy this one-time link now — it is not stored and cannot be shown again:\n\n{$url}")
+            ->title($emailed ? "Invite emailed to {$this->record->email}" : 'Invite created — email failed to send')
+            ->body("One-time link (not stored, can't be shown again):\n\n{$url}")
             ->persistent()
-            ->success()
+            ->{$emailed ? 'success' : 'warning'}()
             ->send();
     }
 
