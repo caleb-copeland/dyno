@@ -63,11 +63,7 @@ class InvitesTable
                     ->visible(fn (Invite $record): bool => is_null($record->used_at))
                     ->requiresConfirmation()
                     ->action(function (Invite $record) {
-                        $raw = bin2hex(random_bytes(32));
-                        $record->forceFill([
-                            'token_hash' => Invite::hashToken($raw),
-                            'expires_at' => now()->addDays(14),
-                        ])->save();
+                        $raw = $record->rotateToken();
 
                         Notification::make()
                             ->title('New link generated')

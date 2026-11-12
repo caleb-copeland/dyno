@@ -32,7 +32,7 @@ class Invite extends Model
      */
     public static function issue(string $email, ?int $invitedBy = null, ?Carbon $expiresAt = null): array
     {
-        $raw = bin2hex(random_bytes(32));
+        $raw = static::newRawToken();
 
         $invite = static::create([
             'email' => strtolower(trim($email)),
@@ -42,6 +42,24 @@ class Invite extends Model
         ]);
 
         return [$invite, $raw];
+    }
+
+    /** Replace the token (old link dies) and reset expiry; returns the new raw token. */
+    public function rotateToken(): string
+    {
+        $raw = static::newRawToken();
+
+        $this->forceFill([
+            'token_hash' => static::hashToken($raw),
+            'expires_at' => now()->addDays(14),
+        ])->save();
+
+        return $raw;
+    }
+
+    private static function newRawToken(): string
+    {
+        return bin2hex(random_bytes(32));
     }
 
     public static function hashToken(string $raw): string

@@ -100,4 +100,23 @@ class RegistrationTest extends TestCase
 
         $this->assertSame(1, User::where('email', 'invitee@example.com')->count());
     }
+
+    public function test_rotating_a_token_kills_the_old_link(): void
+    {
+        [$invite, $old] = Invite::issue('invitee@example.com', expiresAt: now()->subMinute());
+
+        $new = $invite->rotateToken();
+
+        $this->get('/register?token='.$old)->assertNotFound();
+        $this->get('/register?token='.$new)->assertOk();
+    }
+
+    public function test_registration_lookups_are_throttled(): void
+    {
+        for ($i = 0; $i < 10; $i++) {
+            $this->get('/register?token=nope')->assertNotFound();
+        }
+
+        $this->get('/register?token=nope')->assertTooManyRequests();
+    }
 }
