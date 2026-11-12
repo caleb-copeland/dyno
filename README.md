@@ -27,7 +27,9 @@ Dev stack binds to 127.0.0.1 only — not publicly routed through Traefik.
   email, single-use, expiring. Issued from the Filament admin (`/admin/invites`); the raw link
   is shown **once** on creation and never stored.
 - **Users** carry `role` (`member`/`admin`, string column so a 3rd role needs no migration) and
-  `active`. Deactivated users can't log in and are signed out on their next request.
+  `active`, managed at `/admin/users` (no delete — deactivate keeps history; admins can't
+  demote or deactivate themselves). Deactivated users can't log in and are signed out on
+  their next request.
 - **Filament panel** gated by `canAccessPanel` → `role === 'admin' && active`.
 - Login: separate IP (30) and account (5) rate limiters; session regenerated on login.
 - Session lifetime defaults high (30d) so an installed PWA stays logged in.

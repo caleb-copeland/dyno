@@ -33,6 +33,7 @@ class AdminResourcesSmokeTest extends TestCase
             '/admin/workouts/create',
             '/admin/invites',
             '/admin/invites/create',
+            '/admin/users',
         ];
 
         foreach ($urls as $url) {
