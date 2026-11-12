@@ -6,7 +6,7 @@
 <tr>
 <td class="header">
 <a href="{{ $url }}" style="display: inline-block;">
-<img src="{{ rtrim(config('mail.asset_url'), '/') }}/images/email-wordmark.png" class="logo" width="132" height="42" alt="{{ trim($slot) }}">
+<img src="{{ rtrim(config('mail.asset_url'), '/') }}/images/email-wordmark-tile.png" class="logo" width="132" height="42" alt="{{ trim($slot) }}">
 </a>
 </td>
 </tr>
