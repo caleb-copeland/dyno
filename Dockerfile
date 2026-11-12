@@ -51,6 +51,7 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
     { \
         echo 'memory_limit = 256M'; \
         echo 'expose_php = Off'; \
+        echo 'session.upload_progress.enabled = Off'; \
         echo 'opcache.enable = 1'; \
         echo 'opcache.validate_timestamps = 0'; \
         echo 'opcache.memory_consumption = 192'; \
