@@ -1,8 +1,8 @@
 # Dyno
 
 Self-hosted, invite-only progressive web app for curated climbing strength training.
-Single Laravel codebase; PWA + Filament admin, same-origin. See the product brief for the
-full design rationale (injury-aware scheduler, workout runner, WHOOP-style UI).
+Single Laravel codebase: a mobile-first member PWA plus a Filament admin, same-origin.
+Live at dyno.gizmostash.com (invite-only).
 
 ## Stack
 
@@ -27,18 +27,24 @@ Dev stack binds to 127.0.0.1 only — not publicly routed through Traefik.
   email, single-use, expiring. Issued from the Filament admin (`/admin/invites`); the raw link
   is shown **once** on creation and never stored.
 - **Users** carry `role` (`member`/`admin`, string column so a 3rd role needs no migration) and
-  `active` (revoke access without deleting records). Deactivated users can't log in.
+  `active`. Deactivated users can't log in and are signed out on their next request.
 - **Filament panel** gated by `canAccessPanel` → `role === 'admin' && active`.
 - Login: separate IP (30) and account (5) rate limiters; session regenerated on login.
 - Session lifetime defaults high (30d) so an installed PWA stays logged in.
 
-## Build sequence
+## Features
 
-1. ✅ Auth + invites + Filament panel guard
-2. ⬜ Exercise + workout library (Filament resources)
-3. ⬜ Workout runner (both timers, Web Audio cues, Wake Lock) — *gym-test before proceeding*
-4. ⬜ Logging + history
-5. ⬜ Schedule builder (brute-force generator + drag-to-edit, constraint tiers)
-6. ⬜ Baseline tests (gated, scripted warmups)
-7. ⬜ Offline + background sync
-8. ⬜ Push notifications
+- **Library (admin):** exercises → workouts → ordered workout steps, managed as Filament resources.
+- **Workout runner:** work/rest timers, Web Audio cues, Wake Lock so the screen stays on.
+- **Logging + history:** set toggles go through one `App\Actions\LogSet` action, used by both
+  Livewire and `POST /api/set-log`. Offline toggles queue in localStorage and flush on reconnect.
+- **Weekly planner:** pick workouts per day; the schedule auto-saves.
+- **Baseline tests:** gated max-strength tests with scripted warmups. Results set the
+  percentage-of-max loads in the runner.
+- **Push reminders:** Web Push (VAPID via `artisan app:vapid`), sent daily by `app:send-reminders`.
+
+## Tests
+
+```
+make test      # PHPUnit feature tests: auth, invites, runner tampering/IDOR, offline API, push
+```

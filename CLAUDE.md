@@ -43,8 +43,8 @@ No local PHP — everything runs in Docker.
 - Runner: `App\Livewire\WorkoutRunner` + Alpine in `layouts/runner` — timers,
   Web Audio, Wake Lock; set toggles go through `App\Actions\LogSet` /
   `POST /api/set-log` with a localStorage offline queue (flush on reconnect).
-- Scheduler: `App\Services\ScheduleGenerator` (brute-force + constraint tiers) +
-  `App\Livewire\ScheduleBuilder`.
+- Scheduler: `App\Livewire\ScheduleBuilder` — manual per-day workout planner,
+  auto-saves; client-mutable `days` is bounded and validated server-side.
 - Baseline tests: gated `App\Livewire\BaselineTest`; feed `% -of-test` into the runner.
 - Push: `minishlink/web-push`, VAPID via `artisan app:vapid`; `app:send-reminders`
   runs daily via the scheduler container.
