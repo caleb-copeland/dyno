@@ -36,3 +36,9 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// Local-only email preview: renders the branded reset email in the browser.
+if (app()->isLocal()) {
+    Route::get('/dev/mail/reset-password', fn () => (new \Illuminate\Auth\Notifications\ResetPassword('preview-token'))
+        ->toMail(\App\Models\User::firstOrFail()));
+}
