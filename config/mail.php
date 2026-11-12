@@ -114,6 +114,13 @@ return [
     | Markdown mail theme — resources/views/vendor/mail/html/themes/dyno.css.
     */
 
+    /*
+    | Absolute base for images in emails. Always the public site: inbox clients
+    | can't fetch dev hosts (dyno.test), so local mail would show broken images.
+    */
+
+    'asset_url' => env('MAIL_ASSET_URL', 'https://dyno.gizmostash.com'),
+
     'markdown' => [
         'theme' => 'dyno',
         'paths' => [resource_path('views/vendor/mail')],

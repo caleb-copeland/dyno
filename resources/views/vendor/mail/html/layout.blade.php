@@ -9,8 +9,17 @@
 <meta name="supported-color-schemes" content="light dark">
 <style>
 @media only screen and (max-width: 600px) {
+/* Dyno: card keeps a small gutter instead of running edge to edge */
+.body {
+padding: 0 12px !important;
+}
+
 .inner-body {
 width: 100% !important;
+}
+
+.content-cell {
+padding: 24px 20px !important;
 }
 
 .footer {
